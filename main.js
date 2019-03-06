@@ -20,4 +20,37 @@ function getProfitMargin (ev1,ev2, stake){
     }
 }
 
-console.log( getProfitMargin(1.25, 4, 10 ));
+// console.log( getProfitMargin(1.25, 4, 10 ));
+
+
+const puppeteer = require('puppeteer');
+
+(async () => {
+
+	const browser = await puppeteer.launch({ headless: false});
+	const page = await browser.newPage();
+	page.setViewport({width: 1700, height: 1300});
+	await page.goto('https://m.skybet.com/esports');
+	await page.screenshot({path: 'example.png'});
+
+
+	const csgoSelector = '.flex-layout__wrapper > .sbp__flex-layout > .sbp__main > #js-content > #js-inner-content > ' +
+		'.main__content > .outer-page-content > #page-content > .table-group > [data-ui-state=esportsfeatured] > ' +
+		'.accordion--generic > h2 > span';
+
+
+	const getTitle = '#page-content > .class-title > .class-title__text';
+	// const text = await page.evaluate((getTitle) => document.querySelector(getTitle).innerText);
+	//console.log(text)
+
+	let title = await page.evaluate((sel) => {
+		let element = document.querySelector(sel);
+		return element ? element.innerHTML : null;
+	}, csgoSelector);
+
+	console.log(title)
+
+	// const searchValue = await page.$eval(getTitle, el => el.value);
+	//console.log(searchValue)
+	await browser.close();
+})();

@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/NPrada/arbitrage-finder/issues"
   },
-  "homepage": "https://github.com/NPrada/arbitrage-finder#readme"
+  "homepage": "https://github.com/NPrada/arbitrage-finder#readme",
+  "dependencies": {
+    "puppeteer": "^1.13.0"
+  }
 }
