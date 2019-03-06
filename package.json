@@ -1,0 +1,19 @@
+{
+  "name": "arbitrage-finder",
+  "version": "1.0.0",
+  "description": "find profitable arbitrages",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NPrada/arbitrage-finder.git"
+  },
+  "author": "NP",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NPrada/arbitrage-finder/issues"
+  },
+  "homepage": "https://github.com/NPrada/arbitrage-finder#readme"
+}
