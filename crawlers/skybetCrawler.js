@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 module.exports = {
 	run: async () => {
 
-		const browser = await puppeteer.launch({ headless: true});
+		const browser = await puppeteer.launch({ headless: false});
 		const page = await browser.newPage();
 		page.setViewport({width: 1700, height: 1300});
 
@@ -25,20 +25,28 @@ module.exports = {
 		$(eventDataSelector).children().each((i, elem) => { //gets the events
 
 			$(elem).find(matchDataSelector).children().each((i,elem) => { 	//gets the matches
-				let eventInfo = {}
+				let eventInfo = {};
 
-				const team1regx = /.+(?=\s\sv\s\s)/g;
-				const team2regx = /(?<=v ).+(?=(\s\())/g;
+				const team1regx = /.+(?=\sv\s)/g;
+				const team2regx = /(?<=v ).+(?=(\s\(Bo\d\)))/g;
 
 				eventInfo.eventName = $(elem).find('tr > .cell--link > a').attr('data-analytics');
 				eventInfo.pageHref = baseURL + $(elem).find('tr > .cell--link > a').attr('href')
 
 				const teamsString = $(elem).find('tr > .cell--link > a').text().trim();
-				if(teamsString.match(team1regx).length === 1){
+
+				if (teamsString.match(team1regx) !== null && teamsString.match(team1regx).length === 1) {
 					eventInfo.team1 = teamsString.match(team1regx)[0].trim()
+				} else {
+					console.error(`ERROR: some error with finding team1s name using ${team1regx} from ${teamsString}`);
+					eventInfo.error = `ERROR: some error with finding team1s name using ${team1regx} from ${teamsString}`
 				}
-				if(teamsString.match(team2regx).length === 1){
+
+				if (teamsString.match(team2regx) !== null &&teamsString.match(team2regx).length === 1) {
 					eventInfo.team2 = teamsString.match(team2regx)[0].trim()
+				} else {
+					console.error(`ERROR: some error with finding team2s name using ${team2regx} from ${teamsString}`);
+					eventInfo.error = `ERROR: some error with finding team1s name using ${team1regx} from ${teamsString}`
 				}
 
 				data.push(eventInfo)
@@ -47,7 +55,7 @@ module.exports = {
 		});
 
 		await browser.close();
-		console.log(data);
+		//console.log(data);
 		return data
 	},
 };
