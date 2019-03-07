@@ -72,6 +72,11 @@ module.exports = {
 		});
 
 		await browser.close();
+
+		if(data.length === 0){
+			console.log(allDom);
+			console.log('There was some error we didnt get any data')
+		}
 		console.log(data);
 		return data
 	},
