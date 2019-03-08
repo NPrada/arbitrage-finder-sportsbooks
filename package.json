@@ -28,6 +28,8 @@
     "@types/cheerio": "^0.22.11",
     "@types/node": "^11.10.5",
     "@types/puppeteer": "^1.12.1",
+    "@types/request": "^2.48.1",
+    "@types/request-promise-native": "^1.0.15",
     "typescript": "^3.3.3333"
   }
 }

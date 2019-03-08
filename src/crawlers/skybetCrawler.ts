@@ -1,9 +1,9 @@
-import puppeteer from 'puppeteer'
 import cheerio from 'cheerio'
 import request from 'request-promise-native'
 
 interface EventData {
 	eventName: string | null
+	sportName: string | null
 	pageHref: string | null
 	team1: string | null
 	team2: string | null
@@ -24,11 +24,13 @@ module.exports = {
 
 
 		const baseURL = 'https://m.skybet.com/';
-		allDom = null;
+		let allDom = null;
 
-	 	await request({
+
+		await request({
 			url:`${baseURL}/esports`,
-			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'}, (error, response, html) => {
+			// @ts-ignore
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'}, (error: any, response: any, html:string) => {
 			if(!error && response.statusCode){
 					console.log('done')
 					allDom = html
@@ -46,6 +48,7 @@ module.exports = {
 			$(elem).find(matchDataSelector).children().each((i: number,elem: CheerioElement) => { 	//gets the matches
 				let eventInfo: EventData = {
 					eventName: null,
+					sportName: null,
 					pageHref: null,
 					team1: null,
 					team2: null,
@@ -71,9 +74,10 @@ module.exports = {
 				}
 
 
-				function applyRegex (string,regex){
-					if (string.match(regex) !== null && string.match(regex).length === 1) {
-						return string.match(regex)[0].trim()
+				function applyRegex (string: string, regex: RegExp) {
+
+					if (string.match(regex) !== null && string.match(regex)!.length === 1) {
+						return string.match(regex)![0].trim()
 					} else {
 						throw `ERROR: some error with finding team2s name using ${team2regx} from ${teamsString}`;
 					}
