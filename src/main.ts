@@ -5,7 +5,7 @@
 
 //getting the odds margin to see if its profitable
 // [1/(odds of event 1) + 1/(odds of event 2)} x 100
-function getProfitMargin (ev1,ev2, stake){
+function getProfitMargin (ev1: number,ev2: number, stake: number){
     const marginPercent =  ( ( (1/ev1) + (1/ev2) ) * 100);
     const stake1 = stake;
     const stake2 = (stake1 * ev1) / ev2;
@@ -20,10 +20,10 @@ function getProfitMargin (ev1,ev2, stake){
         bet2: {odd: ev2, stake: stake2}
     }
 }
-// console.log( getProfitMargin(1.25, 4, 10 ));
+ console.log( getProfitMargin(1.25, 4, 10 ));
 
-const skybetCrawler = require('./crawlers/skybetCrawler')
-const skyData = skybetCrawler.run();
+// const skybetCrawler = require('./crawlers/skybetCrawler')
+// const skyData = skybetCrawler.run();
 
 
 
