@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer'
 import cheerio from 'cheerio'
+import request from 'request-promise-native'
 
 interface EventData {
 	eventName: string | null
@@ -12,24 +13,30 @@ interface EventData {
 module.exports = {
 	run: async () => {
 
-		const browser = await puppeteer.launch({ headless: true});
-		const page = await browser.newPage();
-		await page.setViewport({width: 1700, height: 1300});
+		// const browser = await puppeteer.launch({ headless: true});
+		// const page = await browser.newPage();
+		// page.setViewport({width: 1700, height: 1300});
+		//get the entire dom as text
+		// let allDom = await page.evaluate((sel) => {
+		// 	let element = document.querySelector(sel);
+		// 	return element ? element.innerHTML : null;
+		// }, "body");
+
 
 		const baseURL = 'https://m.skybet.com/';
-		await page.goto(`${baseURL}/esports`);
+		allDom = null;
 
-		//get the entire dom as text
-		let allDom = await page.evaluate((sel: string) => {
-			let element = document.querySelector(sel);
-			//return element ? element.innerHTML : null;
-			return element ? element.innerHTML : null;
-		}, "body");
+	 	await request({
+			url:`${baseURL}/esports`,
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'}, (error, response, html) => {
+			if(!error && response.statusCode){
+					console.log('done')
+					allDom = html
+			}
+		})
 
-		if(allDom === null) throw Error('ERROR: failed to find dom');
-
+		if(allDom === null) throw Error('ERROR: failed to find dom'); //TODO might not be needed
 		const $ = cheerio.load(allDom);
-
 		const eventDataSelector = ' #page-content > .table-group > [data-ui-state=esportsfeatured] ';
 		const matchDataSelector = '.accordion--generic > table > tbody';
 		const data: Array<EventData> = [];
@@ -44,34 +51,44 @@ module.exports = {
 					team2: null,
 				};
 
-				const team1regx = /.+(?=\sv\s)/g;
-				const team2regx = /(?<=v ).+(?=(\s\(Bo\d\)))/g;
+				const team1regx = /.+(?=\sv\s)/g;					//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+				const team2regx = /(?<=v ).+(?=(\s\())/g; //gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+				const eventNameRegx = /(?<=- ).+/g;  			//gets it from eg: 'LOL - Liga Latinoamerica
+				const sportNameRegx = /.+(?=\s-\s)/g; 		//gets it from eg: 'LOL - Liga Latinoamerica
+				// /(?<=v ).+(?=(\s\(Bo\d\)))/g; csgo specific regex
 
-				eventInfo.eventName = $(elem).find('tr > .cell--link > a').attr('data-analytics');
 				eventInfo.pageHref = baseURL + $(elem).find('tr > .cell--link > a').attr('href')
 
+				const fullEventName = $(elem).find('tr > .cell--link > a').attr('data-analytics');
 				const teamsString = $(elem).find('tr > .cell--link > a').text().trim();
-
-				if (teamsString.match(team1regx) !== null && teamsString.match(team1regx)!.length === 1) {
-					eventInfo.team1 = teamsString.match(team1regx)![0].trim()
-				} else {
-					console.error(`ERROR: some error with finding team1s name using ${team1regx} from ${teamsString}`);
-					eventInfo.error = `ERROR: some error with finding team1s name using ${team1regx} from ${teamsString}`
+				try{
+					eventInfo.eventName = applyRegex(fullEventName, eventNameRegx);	//get the event name
+					eventInfo.sportName = applyRegex(fullEventName, sportNameRegx); //get the sport name
+					eventInfo.team1 = applyRegex(teamsString,team1regx);						// get the team1 name
+					eventInfo.team2 = applyRegex(teamsString,team2regx);						//get the team2 name
+				} catch (e) {
+					eventInfo.error = e;
 				}
 
-				if (teamsString.match(team2regx) !== null &&teamsString.match(team2regx)!.length === 1) {
-					eventInfo.team2 = teamsString.match(team2regx)![0].trim()
-				} else {
-					console.error(`ERROR: some error with finding team2s name using ${team2regx} from ${teamsString}`);
-					eventInfo.error = `ERROR: some error with finding team1s name using ${team1regx} from ${teamsString}`
+
+				function applyRegex (string,regex){
+					if (string.match(regex) !== null && string.match(regex).length === 1) {
+						return string.match(regex)[0].trim()
+					} else {
+						throw `ERROR: some error with finding team2s name using ${team2regx} from ${teamsString}`;
+					}
+
 				}
 
 				data.push(eventInfo)
 			});
-
 		});
 
-		await browser.close();
+
+		if(data.length === 0){
+			console.log(allDom);
+			console.log('There was some error we didnt get any data')
+		}
 		console.log(data);
 		return data
 	},
