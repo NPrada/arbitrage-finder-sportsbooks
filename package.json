@@ -20,12 +20,14 @@
   "homepage": "https://github.com/NPrada/arbitrage-finder#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "lodash": "^4.17.11",
     "puppeteer": "^1.13.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.11",
+    "@types/lodash": "^4.14.122",
     "@types/node": "^11.10.5",
     "@types/puppeteer": "^1.12.1",
     "@types/request": "^2.48.1",

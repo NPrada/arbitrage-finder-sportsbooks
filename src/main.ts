@@ -20,10 +20,9 @@ function getProfitMargin (ev1: number,ev2: number, stake: number){
         bet2: {odd: ev2, stake: stake2}
     }
 }
- console.log( getProfitMargin(1.25, 4, 10 ));
 
-// const skybetCrawler = require('./crawlers/skybetCrawler')
-// const skyData = skybetCrawler.run();
+import run from './crawlers/skybetCrawler'
+const skyData = run();
 
 
 
