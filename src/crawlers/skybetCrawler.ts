@@ -120,7 +120,7 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 	return data;
 }
 
-const run = async () => {
+const runSkyBetCrawler = async () => {
 
 	const baseUrlDom = await fetchHtml(`${baseURL}/esports`);
 	const allMatchesPath = await getPathToAllMatchesByDay(baseUrlDom)
@@ -138,4 +138,4 @@ const run = async () => {
 	return matchDataList;
 }
 
-export default run
+export default runSkyBetCrawler
