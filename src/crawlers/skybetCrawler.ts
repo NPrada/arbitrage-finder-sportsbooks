@@ -18,7 +18,7 @@ interface EventData {
 const baseURL = 'https://m.skybet.com/';
 
 
-export const getAllMatchesByDayPath =  async (alldom: string | null) => {
+export const getPathToAllMatchesByDay =  async (alldom: string | null) => {
 
 	if (isNil(alldom) || alldom === '')
 		throw Error ('getAllMatchesByDayPath got no table html to work with')
@@ -39,7 +39,6 @@ export const getAllMatchesByDayPath =  async (alldom: string | null) => {
 }
 
 function applyRegex (string: string, regex: RegExp) {
-
 	if (string.match(regex) !== null && string.match(regex)!.length === 1) {
 		return string.match(regex)![0].trim()
 	} else {
@@ -54,12 +53,6 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 
 	const data: Array<EventData> = []
 	let rowElem: Cheerio
-	const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-	const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-	const sportNameRegx = /.+(?=\s*[\-\–]\s*)/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-	const eventNameRegex = /(?<=[\-\–]\s*)(.*)(?=\s*[\–\-].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-	const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-
 
 	const $ = cheerio.load(tableHtml);
 	let currHeaderText: string = ''
@@ -75,20 +68,18 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 			team2: {name: null, odds: null}
 		}
 
-
-
+		//go through the rows on by one
 		rowElem = tableRows.eq(i)
 		const findHeaderText = rowElem.find('td.group-header').text(); //eg: LOL - LEC – 21:10
 
 		if(findHeaderText !== ''){
-			currHeaderText = findHeaderText.trim()
+			currHeaderText = findHeaderText.trim() //update the Header text that is being used
 		}else {
 			try{
 				const matchNameString = rowElem.find('a[href] > b').text()
 				const matchHref = rowElem.find('a[href]').attr('href')
 
-				//TODO add a check if the outcome is suspended
-				const odds1 = rowElem.not('.outcome--is-suspended')
+				const odds1 = rowElem.not('.outcome--is-suspended') //TODO confirm this outcome works
 					.find('.cell--price')
 					.find('.js-oc-price')
 					.first().text().trim()
@@ -98,12 +89,18 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 					.find('.js-oc-price')
 					.last().text().trim()
 
-				if (odds1 == ''|| odds2 == '') throw 'Error: could not find some odds'
-				if (matchHref === '') throw 'Error: could not find the match link'
 				if (matchNameString === '') throw 'Error: could not find the match name'
+				if (matchHref === '') throw 'Error: could not find the match link'
+				if (odds1 == ''|| odds2 == '') throw 'Error: could not find some odds'
 
 
-				matchData.date = applyRegex(currHeaderText, timeRegex) + date;
+				const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+				const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+				const sportNameRegx = /.+(?=\s*[\-\–\—]\s*.*\s*[\-\–\—])/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+				const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+				const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+
+				matchData.date = applyRegex(currHeaderText, timeRegex) + ' ' +date;
 				matchData.eventName = applyRegex(currHeaderText, eventNameRegex)
 				matchData.sportName = applyRegex(currHeaderText, sportNameRegx)
 				matchData.pageHref = baseURL + matchHref
@@ -111,6 +108,7 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 				matchData.team2.odds = odds2
 				matchData.team1.name = applyRegex(matchNameString, team1regx)
 				matchData.team2.name = applyRegex(matchNameString, team2regx)
+
 			}catch (e) {
 				console.log(e)
 				matchData.error = e
@@ -119,89 +117,25 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 			data.push(matchData)
 		}
 	}
-	console.log(data)
 	return data;
 }
 
 const run = async () => {
 
+	const baseUrlDom = await fetchHtml(`${baseURL}/esports`);
+	const allMatchesPath = await getPathToAllMatchesByDay(baseUrlDom)
 
-
-
-	//const baseUrlDom = await fetchHtml(`${baseURL}/esports`);
-	//const allMatchesPath = await getAllMatchesByDayPath(baseUrlDom)
-
-
-	let allDom = await fetchHtml(`https://m.skybet.com/esports/coupon/10011234`); //${baseURL}${allMatchesPath}
+	let allDom = await fetchHtml(`${baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
 
 	const $ = cheerio.load(allDom);
 	const allDayTables = $('ul.table-group','#page-content').find('li')
 	const matchDataList: Array<EventData> = []
-	for (let i = 0; i < allDayTables.length; i++){
 
-		matchDataList.concat(getMatchDataFromDayTable(allDayTables.eq(i).html()))
+	for (let i = 0; i < allDayTables.length; i++){
+		matchDataList.push(...getMatchDataFromDayTable(allDayTables.eq(i).html()))
 	}
 	console.log(matchDataList)
-
-
-	//allDom = await fetchHtml(`${baseURL}${marketsListPath}`);
-
-	//check you you indeed are on the page with all the matches by day
-
-
-
-
-
-
-
-
-
-
-
-
-	// $(eventDataSelector).children().each((i: number, elem: CheerioElement) => { //gets the events
-	//
-	// 	$(elem).find(matchDataSelector).children().each((i: number,elem: CheerioElement) => { 	//gets the matches
-	// 		let eventInfo: EventData = {
-	// 			eventName: null,
-	// 			sportName: null,
-	// 			pageHref: null,
-	// 			team1: null,
-	// 			team2: null,
-	// 		};
-	//
-	//
-	// 		const eventNameRegx = /(?<=- ).+/g;  			//gets it from eg: 'LOL - Liga Latinoamerica
-	// 		const sportNameRegx = /.+(?=\s-\s)/g; 		//gets it from eg: 'LOL - Liga Latinoamerica
-	// 		// /(?<=v ).+(?=(\s\(Bo\d\)))/g; csgo specific regex
-	//
-	// 		eventInfo.pageHref = baseURL + $(elem).find('tr > .cell--link > a').attr('href')
-	//
-	// 		const fullEventName = $(elem).find('tr > .cell--link > a').attr('data-analytics');
-	// 		const teamsString = $(elem).find('tr > .cell--link > a').text().trim();
-	// 		try{
-	// 			eventInfo.eventName = applyRegex(fullEventName, eventNameRegx);	//get the event name
-	// 			eventInfo.sportName = applyRegex(fullEventName, sportNameRegx); //get the sport name
-	// 			eventInfo.team1 = applyRegex(teamsString,team1regx);						// get the team1 name
-	// 			eventInfo.team2 = applyRegex(teamsString,team2regx);						//get the team2 name
-	// 		} catch (e) {
-	// 			eventInfo.error = e;
-	// 		}
-	//
-	//
-	//
-	//
-	// 		data.push(eventInfo)
-	// 	});
-	// });
-
-
-	// if(data.length === 0){
-	// 	console.log($('body'))
-	// 	console.log('There was some error we didnt get any data')
-	// }
-	// console.log(data);
-	//return data
+	return matchDataList;
 }
 
 export default run

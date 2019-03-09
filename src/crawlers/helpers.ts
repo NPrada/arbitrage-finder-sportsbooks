@@ -1,5 +1,6 @@
 import fs from 'fs'
 import request from 'request-promise-native'
+//import fakeUA from 'fake-useragent';
 
 
 //makes a request with a default user agent
