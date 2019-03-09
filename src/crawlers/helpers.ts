@@ -17,7 +17,7 @@ export const fetchHtml = async (url: string) => {
 	return allDom
 }
 
-//just a helper if you want to log out html for debugging purpuses
+//just a helper if you want to log out html for debugging purposes
 export const logHtml = (html: string) => {
 	const fileName = 'HtmlLog.html'
 	fs.writeFile(fileName, html, function (err) {

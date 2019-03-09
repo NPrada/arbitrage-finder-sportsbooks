@@ -5,6 +5,7 @@ import {fetchHtml, logHtml} from './helpers';
 //this is the schema that this file will output for each match
 
 interface EventData {
+	sportbookId: string
 	eventName: string | null
 	sportName: string | null
 	date: string | null
@@ -16,14 +17,15 @@ interface EventData {
 }
 
 const baseURL = 'https://m.skybet.com/';
+const sportBookId = 'skybet'
 
 
-export const getPathToAllMatchesByDay =  async (alldom: string | null) => {
+export const getPathToAllMatchesByDay =  async (allDom: string | null) => {
 
-	if (isNil(alldom) || alldom === '')
+	if (isNil(allDom) || allDom === '')
 		throw Error ('getAllMatchesByDayPath got no table html to work with')
 
-	const $ = cheerio.load(alldom);
+	const $ = cheerio.load(allDom);
 
 	const marketsListPath = $('span:contains("Accumulators")','#page-content')
 		.closest('li')
@@ -61,6 +63,7 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 	const tableRows = $('tbody > tr')
 	for(let i = 0; i < tableRows.length; i++){
 		const matchData: EventData = {
+			sportbookId: sportBookId,
 			eventName: null,
 			sportName: null,
 			date: null,
