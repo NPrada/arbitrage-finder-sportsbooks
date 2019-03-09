@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import isNil from 'lodash/isNil'
-import {fetchHtml, logHtml} from './helpers';
+import {fetchHtml, logHtml, applyRegex} from './helpers';
 
 //this is the schema that this file will output for each match
 
@@ -17,7 +17,28 @@ interface EventData {
 }
 
 const baseURL = 'https://m.skybet.com/';
-const sportBookId = 'skybet'
+const sportBookId = 'skybet';
+
+
+const runSkyBetCrawler = async () => {
+
+    const baseUrlDom = await fetchHtml(`${baseURL}/esports`);
+    const allMatchesPath = await getPathToAllMatchesByDay(baseUrlDom)
+
+    let allDom = await fetchHtml(`${baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
+
+    const $ = cheerio.load(allDom);
+    const allDayTables = $('ul.table-group','#page-content').find('li')
+    const matchDataList: Array<EventData> = []
+
+    for (let i = 0; i < allDayTables.length; i++){
+        matchDataList.push(...getMatchDataFromDayTable(allDayTables.eq(i).html()))
+    }
+    console.log(matchDataList)
+    return matchDataList;
+}
+
+export default runSkyBetCrawler
 
 
 export const getPathToAllMatchesByDay =  async (allDom: string | null) => {
@@ -40,13 +61,6 @@ export const getPathToAllMatchesByDay =  async (allDom: string | null) => {
 	return marketsListPath
 }
 
-function applyRegex (string: string, regex: RegExp) {
-	if (string.match(regex) !== null && string.match(regex)!.length === 1) {
-		return string.match(regex)![0].trim()
-	} else {
-	throw `ERROR: some error with finding the substring using ${regex} on ${string}`;
-	}
-}
 
 export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventData> => {
 
@@ -123,22 +137,3 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 	return data;
 }
 
-const runSkyBetCrawler = async () => {
-
-	const baseUrlDom = await fetchHtml(`${baseURL}/esports`);
-	const allMatchesPath = await getPathToAllMatchesByDay(baseUrlDom)
-
-	let allDom = await fetchHtml(`${baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
-
-	const $ = cheerio.load(allDom);
-	const allDayTables = $('ul.table-group','#page-content').find('li')
-	const matchDataList: Array<EventData> = []
-
-	for (let i = 0; i < allDayTables.length; i++){
-		matchDataList.push(...getMatchDataFromDayTable(allDayTables.eq(i).html()))
-	}
-	console.log(matchDataList)
-	return matchDataList;
-}
-
-export default runSkyBetCrawler

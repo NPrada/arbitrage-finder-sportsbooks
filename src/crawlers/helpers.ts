@@ -28,5 +28,15 @@ export const logHtml = (html: string) => {
 	});
 }
 
+//applies a regex to a string and throws an error if it fails in some way
+export function applyRegex (string: string, regex: RegExp) {
+	if (string === '') throw 'ERROR: the string we are ment to match with is blank';
+    if (string.match(regex) !== null && string.match(regex)!.length === 1) {
+        return string.match(regex)![0].trim()
+    } else {
+        throw `ERROR: some error with finding the substring using ${regex} on ${string}`;
+    }
+}
+
 
 
