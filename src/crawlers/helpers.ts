@@ -5,7 +5,6 @@ import {UAs} from './useragentList'
 
 
 export function fakeUA(): string {
-	console.log(Math.floor(Math.random()*UAs.length))
 	return UAs[Math.floor(Math.random()*UAs.length)]
 }
 

@@ -2,10 +2,10 @@
   "name": "arbitrage-finder",
   "version": "1.0.0",
   "description": "find profitable arbitrages",
-  "main": "src/main.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && node dist/main.js"
+    "build": "tsc && node dist/index.js"
   },
   "repository": {
     "type": "git",
