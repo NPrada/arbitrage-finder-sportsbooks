@@ -22,4 +22,6 @@ function getProfitMargin (ev1: number,ev2: number, stake: number){
 }
 
 import runSkyBetCrawler from './crawlers/skybetCrawler'
+import * as dotenv from 'dotenv'
+dotenv.config() //will load in the env variables
 const skyData = runSkyBetCrawler();

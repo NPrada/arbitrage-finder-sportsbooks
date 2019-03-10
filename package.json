@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && node dist/index.js"
+    "build": "tsc && echo typescript compiled successfully..  && node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -19,12 +19,14 @@
   "homepage": "https://github.com/NPrada/arbitrage-finder#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "dotenv": "^6.2.0",
     "fake-useragent": "^1.0.1",
     "lodash": "^4.17.11",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.0",
     "@types/cheerio": "^0.22.11",
     "@types/lodash": "^4.14.122",
     "@types/node": "^11.10.5",
