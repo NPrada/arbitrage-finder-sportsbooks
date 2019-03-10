@@ -1,15 +1,21 @@
 import fs from 'fs'
 import request from 'request-promise-native'
-//import fakeUA from 'fake-useragent';
+import {UAs} from './useragentList'
 
 
-//makes a request with a default user agent
+
+export function fakeUA(): string {
+	console.log(Math.floor(Math.random()*UAs.length))
+	return UAs[Math.floor(Math.random()*UAs.length)]
+}
+
+//makes a request
 export const fetchHtml = async (url: string) => {
 	let allDom = ''
 	await request({
 		url: url,
 		// @ts-ignore
-		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'}, (error: any, response: any, html:string) => {
+		'User-Agent': fakeUA()}, (error: any, response: any, html:string) => {
 		if(!error && response.statusCode && html !== null){
 			allDom = html
 		}
@@ -37,6 +43,4 @@ export function applyRegex (string: string, regex: RegExp) {
         throw `ERROR: some error with finding the substring using ${regex} on ${string}`;
     }
 }
-
-
 

@@ -23,8 +23,3 @@ function getProfitMargin (ev1: number,ev2: number, stake: number){
 
 import runSkyBetCrawler from './crawlers/skybetCrawler'
 const skyData = runSkyBetCrawler();
-
-
-
-
-
