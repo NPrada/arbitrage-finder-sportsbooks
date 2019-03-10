@@ -1,20 +1,10 @@
 import cheerio from 'cheerio'
 import isNil from 'lodash/isNil'
-import {fetchHtml, logHtml, applyRegex} from './helpers';
-
+import {fetchHtml, logHtml, applyRegex} from './helpers/helpers';
+import {EventData} from '../types'
 //this is the schema that this file will output for each match
 
-interface EventData {
-	sportbookId: string
-	eventName: string | null
-	sportName: string | null
-	date: string | null
-	team1: {name: string | null, odds: string | null}
-	team2:  {name: string | null, odds: string | null}
-	matchType?: string | null
-	pageHref?: string | null
-	error?: string | null
-}
+
 
 const baseURL = 'https://m.skybet.com/';
 const sportBookId = 'skybet';
@@ -47,7 +37,7 @@ export const getPathToAllMatchesByDay =  async (allDom: string | null) => {
 		throw Error ('getAllMatchesByDayPath got no table html to work with')
 
 	const $ = cheerio.load(allDom);
-
+	//TODO improvement check you found the correct Acummulators button by doin toLowercase eg
 	const marketsListPath = $('span:contains("Accumulators")','#page-content')
 		.closest('li')
 		.find("[data-analytics='[Coupons]'] ")
@@ -95,8 +85,8 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 			try{
 				const matchNameString = rowElem.find('a[href] > b').text()
 				const matchHref = rowElem.find('a[href]').attr('href')
-
-				const odds1 = rowElem.not('.outcome--is-suspended') //TODO confirm this outcome works
+				//TODO confirm it does not find suspended outcomes
+				const odds1 = rowElem.not('.outcome--is-suspended') 
 					.find('.cell--price')
 					.find('.js-oc-price')
 					.first().text().trim()
@@ -136,4 +126,3 @@ export const getMatchDataFromDayTable = (tableHtml: string | null): Array<EventD
 	}
 	return data;
 }
-
