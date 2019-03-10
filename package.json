@@ -4,7 +4,6 @@
   "description": "find profitable arbitrages",
   "main": "src/main.js",
   "scripts": {
-    "start": "echo \"this is not set up --> https://stackoverflow.com/questions/41853422/how-to-compile-typescript-using-npm-command\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && node dist/main.js"
   },
@@ -22,7 +21,6 @@
     "cheerio": "^1.0.0-rc.2",
     "fake-useragent": "^1.0.1",
     "lodash": "^4.17.11",
-    "puppeteer": "^1.13.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
   },
@@ -30,7 +28,6 @@
     "@types/cheerio": "^0.22.11",
     "@types/lodash": "^4.14.122",
     "@types/node": "^11.10.5",
-    "@types/puppeteer": "^1.12.1",
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.15",
     "typescript": "^3.3.3333"
