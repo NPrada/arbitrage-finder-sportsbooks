@@ -2,6 +2,7 @@ import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 import isNil from 'lodash/isNil'
 import {fetchHtml, logHtml, applyRegex} from './helpers/helpers';
+import {EventData} from '../types'
 
 const baseURL = 'https://egb.com';
 const sportBookId = 'egb';
@@ -26,12 +27,25 @@ const runEGBCrawler = async () => {
         throw `Error: could not find the table containing all the events`
 
     console.log(eventsTable.length)
+    
+    for(let i=0; i < eventsTable.length; i++ ){
+        getRowData(eventsTable.eq(i).html())
+    }
+
 
     await browser.close();
 }
 
 export default runEGBCrawler
 
-export const getRowData = async () => {
-
+export const getRowData = async (tableRow: string | null)  => {
+    const matchData: EventData = {
+        sportbookId: sportBookId,
+        eventName: null,
+        sportName: null,
+        date: null,
+        team1: {name: null, odds: null},
+        team2: {name: null, odds: null}
+    }
+  
 }

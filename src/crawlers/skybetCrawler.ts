@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import isNil from 'lodash/isNil'
 import {fetchHtml, logHtml, applyRegex} from './helpers/helpers';
-import {EventData} from '../types'
+import {EventData, initializeEventData} from '../types'
 //this is the schema that this file will output for each match
 
 

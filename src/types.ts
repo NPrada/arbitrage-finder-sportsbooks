@@ -10,3 +10,14 @@ export interface EventData {
 	pageHref?: string | null
 	error?: string | null
 }
+
+export const initializeEventData = (sportBookId: string): EventData => {
+	return{
+		sportbookId: sportBookId,
+		eventName: null,
+		sportName: null,
+		date: null,
+		team1: {name: null, odds: null},
+		team2: {name: null, odds: null}
+	}
+}
