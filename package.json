@@ -13,19 +13,16 @@
   },
   "author": "NP",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/NPrada/arbitrage-finder/issues"
-  },
-  "homepage": "https://github.com/NPrada/arbitrage-finder#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "dotenv": "^6.2.0",
-    "fake-useragent": "^1.0.1",
     "lodash": "^4.17.11",
+    "puppeteer": "^1.13.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
   },
   "devDependencies": {
+    "@types/puppeteer": "^1.12.2",
     "@types/dotenv": "^6.1.0",
     "@types/cheerio": "^0.22.11",
     "@types/lodash": "^4.14.122",

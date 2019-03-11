@@ -6,11 +6,12 @@ import {EventData} from '../types'
 
 
 
-const baseURL = 'https://m.skybet.com/';
+const baseURL = 'https://m.skybet.com';
 const sportBookId = 'skybet';
 
 
 const runSkyBetCrawler = async () => {
+
 
     const baseUrlDom = await fetchHtml(`${baseURL}/esports`);
     const allMatchesPath = await getPathToAllMatchesByDay(baseUrlDom)
@@ -19,12 +20,11 @@ const runSkyBetCrawler = async () => {
 
     const $ = cheerio.load(allDom);
     const allDayTables = $('ul.table-group','#page-content').find('li')
-    const matchDataList: Array<EventData> = []
-
+   
+	const matchDataList: Array<EventData> = []
     for (let i = 0; i < allDayTables.length; i++){
         matchDataList.push(...getMatchDataFromDayTable(allDayTables.eq(i).html()))
     }
-    console.log(matchDataList)
     return matchDataList;
 }
 
