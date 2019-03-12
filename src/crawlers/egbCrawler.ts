@@ -4,6 +4,8 @@ import isNil from 'lodash/isNil'
 import BaseCrawler, { EventData } from './baseCrawler';
 import { parseHrtimeToSeconds } from './resources/helpers'
 
+
+//TODO this needs to be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 

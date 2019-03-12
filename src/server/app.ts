@@ -6,12 +6,13 @@ import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
 const app = express();  //startup express
 
+
 // connect to mongodb
-mongoose.connect('mongodb+srv://'+process.env.MONGO_USER+':'+process.env.MONGO_ATLAS_PW+'@pool-match-stats-7w12f.mongodb.net/test?retryWrites=true',
+mongoose.connect(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0-7gj0v.mongodb.net/test?retryWrites=true`,
     {
         useNewUrlParser: true
     }
-).catch(err => console.log(err))
+).catch((err:string) => console.log(err))
 
 //middleware to use before going to the routes
 app.use(morgan('dev'))
@@ -20,7 +21,7 @@ app.use(bodyParser.json());
 
 
 //CORS stuff
-app.use((req, res, next) =>{
+app.use((req:any, res:any, next:any) =>{
     res.header('Access-Control-Allow-Origin', '*') //allow acess to anyone
     res.header('Access-Control-Allow-Headers',
         'Origin, X-Requested-With, Content-Type, Accept, Authorization'
@@ -33,14 +34,14 @@ app.use((req, res, next) =>{
     next() //always return next so the other routes can take over
 })
 
-const usersRoutes = require('./api/routes/users');
-const gamesRoutes = require('./api/routes/games');
+// const usersRoutes = require('./api/routes/users');
+// const gamesRoutes = require('./api/routes/games');
 
-//routes which handle requests
-app.use('/users', usersRoutes)
-app.use('/games', gamesRoutes)
+// //routes which handle requests
+// app.use('/users', usersRoutes)
+// app.use('/games', gamesRoutes)
 
-app.use('/', (res, req, next) =>{
+app.use('/', (res:any, req:any, next:any) =>{
     const error: any = new Error('Not Found')
     error.status = 404
     next(error);

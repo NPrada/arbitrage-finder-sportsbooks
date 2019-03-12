@@ -1,6 +1,8 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
 
+
+//TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
 export interface EventData {
 	sportbookId: string
 	eventName: string | null
