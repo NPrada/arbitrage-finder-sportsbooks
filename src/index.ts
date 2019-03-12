@@ -24,8 +24,7 @@ function getProfitMargin(ev1: number, ev2: number, stake: number) {
 // import runSkyBetCrawler from './crawlers/skybetCrawler'
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
-import * as dotenv from 'dotenv'
-dotenv.config() //will load in the env variables
+
 
 const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
