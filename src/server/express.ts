@@ -12,7 +12,7 @@ mongoose.connect(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGOD
     {
         useNewUrlParser: true
     }
-).catch((err:string) => console.log(err))
+).catch((err:string) => console.log('error:', err))
 
 //middleware to use before going to the routes
 app.use(morgan('dev'))
@@ -34,7 +34,8 @@ app.use((req:any, res:any, next:any) =>{
     next() //always return next so the other routes can take over
 })
 
-// const usersRoutes = require('./api/routes/users');
+import arbRoutes from './api/routes/arbitrages';
+
 // const gamesRoutes = require('./api/routes/games');
 
 // //routes which handle requests
