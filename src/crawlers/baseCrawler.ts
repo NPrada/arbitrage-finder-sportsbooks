@@ -3,6 +3,8 @@ import { UAs } from './resources/useragentList'
 
 
 //TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
+export type SportName = "csgo" | "lol" | "dota2" | "r6" | "sc2"| "overwatch"
+type SportBookIds = 'skybet' | 'egb'
 export interface EventData {
 	sportbookId: string
 	eventName: string | null
@@ -18,10 +20,19 @@ export interface EventData {
 
 export default class BaseCrawler {
 
-	sportBookId: string
-	constructor(sportBookId: string, ) {
+	sportBookId: SportBookIds
+	constructor(sportBookId: SportBookIds, ) {
 		this.sportBookId = sportBookId
 	}
+
+	acceptedSportNames: Array<SportName> = [
+		"csgo", 
+		"lol", 
+		"dota2", 
+		"r6", 
+		"sc2", 
+		"overwatch"
+	]
 
 	initializeEventData = (): EventData => {
 		return {
