@@ -3,8 +3,10 @@ import { UAs } from './resources/useragentList'
 
 
 //TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
-export type SportName = "csgo" | "lol" | "dota2" | "r6" | "sc2"| "overwatch"
+//TODO add a standardise sportname function
+type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
 type SportBookIds = 'skybet' | 'egb'
+
 export interface EventData {
 	sportbookId: string
 	eventName: string | null
@@ -17,7 +19,6 @@ export interface EventData {
 	error?: string | null
 }
 
-
 export default class BaseCrawler {
 
 	sportBookId: SportBookIds
@@ -25,15 +26,8 @@ export default class BaseCrawler {
 		this.sportBookId = sportBookId
 	}
 
-	acceptedSportNames: Array<SportName> = [
-		"csgo", 
-		"lol", 
-		"dota2", 
-		"r6", 
-		"sc2", 
-		"overwatch"
-	]
-
+	
+	
 	initializeEventData = (): EventData => {
 		return {
 			sportbookId: this.sportBookId,
@@ -44,12 +38,41 @@ export default class BaseCrawler {
 			team2: { name: null, odds: null }
 		}
 	}
+	
+	standardiseSportName = (rawSportName: string):SportName => {
 
+		const parsedSportName = rawSportName.toLowerCase().replace(/ /g,'');
+		
+		const csgoRegex = /counter[-—:_/]strike|cs[:]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
+		const dota2Regex = /dota[-—:_/]2|(?<!.)dota(2|)(?!.)/g
+		const lolRegex = /(league|l)[-—:_/](of|o)[-—:_/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
+		const sc2Regex = /(?<!.)((starcraft|sc)[-—:_/]2|(starcraft|sc)(2|))(?!.)/g
+		const overwatchRegex = /(?<!.)(ow|overwatch)(?!.)/g
+		const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_/]6[-—:_/]siege)(?!.)/g
+
+		if(csgoRegex.test(parsedSportName))
+			return 'csgo'
+		else if(dota2Regex.test(parsedSportName))
+			return 'dota2'
+		else if(lolRegex.test(parsedSportName))
+			return 'lol'
+		else if(sc2Regex.test(parsedSportName))
+			return 'sc2'
+		else if(overwatchRegex.test(parsedSportName))
+			return 'overwatch'
+		else if(rainbow6Regex.test(parsedSportName))
+			return 'rainbow6'
+		else{
+			throw `Error: unknown sportname -> ${parsedSportName}`
+		}
+	}
+	
+	//gets a random user agent
 	fakeUA = (): string => {
 		return UAs[Math.floor(Math.random() * UAs.length)]
 	}
 
-	//makes a request
+	//makes a http request and returns the entire dom
 	fetchHtml = async (url: string) => {
 		let allDom = ''
 		await request({

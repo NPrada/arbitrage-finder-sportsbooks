@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 import isNil from 'lodash/isNil'
-import BaseCrawler, { EventData, SportName } from './baseCrawler';
+import BaseCrawler, {EventData} from './baseCrawler';
 import { parseHrtimeToSeconds } from './resources/helpers'
 
 
@@ -40,7 +40,6 @@ class EGBCrawler extends BaseCrawler {
 
     await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-    console.log(matchDataList)
     console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
     return matchDataList
   }
@@ -54,14 +53,22 @@ class EGBCrawler extends BaseCrawler {
     if (!rawRowData.team1 || !rawRowData.team2) return null
     if (!rawRowData.team1.name || !rawRowData.team2.name) return null
     if (!rawRowData.team1.odds || !rawRowData.team2.odds) return null
-		if (rawRowData.error) return null  				//TODO throw an error and log it	
+		
 
 		const sportNameRegex = /.+(?=game)/g
-		//TODO convert the sportnames so they match, eg: cs:go -> csgo
-
+    //TODO convert the sportnames so they match, eg: cs:go -> csgo
+    let parsedSportName = null
+    try{
+      const parsedSportName = this.standardiseSportName(rawRowData.sportName)
+    }catch(e){
+      //TODO throw an error and log it
+      console.log(e)
+      return null
+    }
+    
     return {
       ...rawRowData,
-      sportName: rawRowData.sportName.toLowerCase().replace(/ /g,''),
+      sportName: parsedSportName,
       date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
     }
   }

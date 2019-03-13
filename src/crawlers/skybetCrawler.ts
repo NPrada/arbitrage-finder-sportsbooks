@@ -97,7 +97,7 @@ class SkyBetCrawler extends BaseCrawler {
 
 					matchData.date = this.applyRegex(currHeaderText, timeRegex) + ' ' + date;
 					matchData.eventName = this.applyRegex(currHeaderText, eventNameRegex)
-					matchData.sportName = this.applyRegex(currHeaderText, sportNameRegx)
+					matchData.sportName = this.standardiseSportName(this.applyRegex(currHeaderText, sportNameRegx))
 					matchData.pageHref = this.baseURL + matchHref
 					matchData.team1.odds = odds1
 					matchData.team2.odds = odds2
