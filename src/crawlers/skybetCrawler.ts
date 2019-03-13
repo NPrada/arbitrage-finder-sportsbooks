@@ -77,7 +77,8 @@ class SkyBetCrawler extends BaseCrawler {
 				try {
 					const matchNameString = rowElem.find('a[href] > b').text()
 					const matchHref = rowElem.find('a[href]').attr('href')
-					//TODO confirm it does not find suspended outcomes
+          //TODO confirm it does not find suspended outcomes
+          //TODO check that there isnt a tie option 
 					const odds1 = rowElem.not('.outcome--is-suspended')
 						.find('.cell--price')
 						.find('.js-oc-price')
