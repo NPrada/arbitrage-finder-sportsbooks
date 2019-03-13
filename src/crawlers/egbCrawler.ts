@@ -32,7 +32,7 @@ class EGBCrawler extends BaseCrawler {
 
     for (let i = 0; i < eventsTable.length; i++) {
       const rawData = this.getRawRowData(eventsTable.eq(i))
-      const parsedData = this.parseRowData(rawData)
+      const parsedData = this.parseRawData(rawData)
       if (parsedData !== null) matchDataList.push(parsedData)
     }
 
@@ -45,7 +45,7 @@ class EGBCrawler extends BaseCrawler {
   }
 
   //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
-  parseRowData = (rawRowData: EventData): EventData | null => {
+  parseRawData = (rawRowData: EventData): EventData | null => {
 
     //check if any values are not truthy (null || "" || 'undefined' etc..)
     if (!rawRowData.sportName) return null   	//TODO throw an error and log it
@@ -54,26 +54,20 @@ class EGBCrawler extends BaseCrawler {
     if (!rawRowData.team1 || !rawRowData.team2) return null
     if (!rawRowData.team1.name || !rawRowData.team2.name) return null
     if (!rawRowData.team1.odds || !rawRowData.team2.odds) return null
-		
+		if (rawRowData.error) return null
 
-		const sportNameRegex = /.+(?=game)/g
-    //TODO convert the sportnames so they match, eg: cs:go -> csgo
-    let parsedSportName = null
     try{
-      const parsedSportName = this.standardiseSportName(rawRowData.sportName)
+      return {
+        ...rawRowData,
+        sportName: this.standardiseSportName(rawRowData.sportName),
+        date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
+      }
     }catch(e){
       //TODO throw an error and log it
       console.log(e)
       return null
     }
-    
-    return {
-      ...rawRowData,
-      sportName: parsedSportName,
-      date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
-    }
   }
-
 
   //gets the raw data for each field that then needs to be parsed
   getRawRowData = (tableRow: Cheerio | null): EventData => {

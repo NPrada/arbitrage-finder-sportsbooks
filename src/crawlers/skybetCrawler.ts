@@ -3,6 +3,8 @@ import isNil from 'lodash/isNil'
 import BaseCrawler, { EventData } from './baseCrawler';
 import {parseHrtimeToSeconds} from './resources/helpers'
 
+type extraDataType = {date: string}
+
 class SkyBetCrawler extends BaseCrawler {
 	baseURL = 'https://m.skybet.com';
 
@@ -63,12 +65,12 @@ class SkyBetCrawler extends BaseCrawler {
 		const date = $('h2 > span').text()
 		const tableRows = $('tbody > tr')
 		for (let i = 0; i < tableRows.length; i++) {
-			const matchData = this.initializeEventData()
+			const rawMatchData = this.initializeEventData()
 
 			//go through the rows on by one
 			rowElem = tableRows.eq(i)
 			const findHeaderText = rowElem.find('td.group-header').text().trim(); //eg: LOL - LEC – 21:10
-
+      
 			if (findHeaderText !== '') {
 				currHeaderText = findHeaderText //update the Header text that is being used,
 			} else {
@@ -85,37 +87,66 @@ class SkyBetCrawler extends BaseCrawler {
 						.find('.cell--price')
 						.find('.js-oc-price')
 						.last().text().trim()
-
+          
 					if (matchNameString === '') throw 'Error: could not find the match name'
 					if (matchHref === '') throw 'Error: could not find the match link'
 					if (odds1 == '' || odds2 == '') throw 'Error: could not find some odds'
-
-
-					const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-					const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-					const sportNameRegx = /.+(?=\s*[\-\–\—]\s*.*\s*[\-\–\—])/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-					const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-					const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-
-					matchData.date = this.applyRegex(currHeaderText, timeRegex) + ' ' + date;
-					matchData.eventName = this.applyRegex(currHeaderText, eventNameRegex)
-					matchData.sportName = this.standardiseSportName(this.applyRegex(currHeaderText, sportNameRegx))
-					matchData.pageHref = this.baseURL + matchHref
-					matchData.team1.odds = odds1
-					matchData.team2.odds = odds2
-					matchData.team1.name = this.applyRegex(matchNameString, team1regx)
-					matchData.team2.name = this.applyRegex(matchNameString, team2regx)
-
+          
+					rawMatchData.date = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
+					rawMatchData.eventName = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
+					rawMatchData.sportName = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
+					rawMatchData.pageHref = this.baseURL + matchHref
+					rawMatchData.team1.odds = odds1
+					rawMatchData.team2.odds = odds2
+					rawMatchData.team1.name = matchNameString //'Infinity eSports v Pixel Esports Club (Bo1)'
+					rawMatchData.team2.name = matchNameString //'Infinity eSports v Pixel Esports Club (Bo1)'
+          
+        
 				} catch (e) {
 					console.log(e)
-					matchData.error = e
-				}
-
-				data.push(matchData)
+					rawMatchData.error = e
+        }
+        
+        const parsedRowData = this.parseRawData(rawMatchData, {date: date})
+        
+        if(parsedRowData !== null) data.push(parsedRowData)
 			}
-		}
+    }
 		return data;
-	}
+  }
+  
+  parseRawData = (rawRowData: EventData, extraData: extraDataType): EventData | null => {
+
+    if (!rawRowData.sportName) return null   	//TODO throw an error and log it
+    if (!rawRowData.date) return null        	//TODO throw an error and log it
+    if (!rawRowData.eventName) return null   	//TODO throw an error and log it
+    if (!rawRowData.team1 || !rawRowData.team2) return null
+    if (!rawRowData.team1.name || !rawRowData.team2.name) return null
+    if (!rawRowData.team1.odds || !rawRowData.team2.odds) return null
+		if (rawRowData.error) return null
+
+    //const parsedRowData = this.initializeEventData()
+    const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+    const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+    const sportNameRegx = /.+(?=\s*[\-\–\—]\s*.*\s*[\-\–\—])/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+    const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+    const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+    
+    try{
+       return {
+        ...rawRowData,
+        date: this.applyRegex(rawRowData.date, timeRegex) + ' ' + extraData.date,
+        eventName: this.applyRegex(rawRowData.eventName, eventNameRegex),
+        sportName: this.standardiseSportName(this.applyRegex(rawRowData.sportName, sportNameRegx)), 
+        team1: {...rawRowData.team1, name: this.applyRegex(rawRowData.team1.name, team1regx)},
+        team2: {...rawRowData.team2, name: this.applyRegex(rawRowData.team2.name, team2regx)},
+      }
+    }catch(e){
+      //TODO throw an error and log it
+      console.log(e)
+      return null
+    }
+  }
 }
 
 export default SkyBetCrawler
