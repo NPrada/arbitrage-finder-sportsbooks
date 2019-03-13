@@ -9,7 +9,7 @@ import { parseHrtimeToSeconds } from './resources/helpers'
 class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 
-  run = async () => {
+  run = async ():Promise<Array<EventData>> => {
     //const allDom = await fetchHtml(`${baseURL}/play/simple_bets`);
     const startTime = process.hrtime()
 
@@ -44,6 +44,7 @@ class EGBCrawler extends BaseCrawler {
     return matchDataList
   }
 
+  //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
   parseRowData = (rawRowData: EventData): EventData | null => {
 
     //check if any values are not truthy (null || "" || 'undefined' etc..)
@@ -73,6 +74,8 @@ class EGBCrawler extends BaseCrawler {
     }
   }
 
+
+  //gets the raw data for each field that then needs to be parsed
   getRawRowData = (tableRow: Cheerio | null): EventData => {
     const matchData = this.initializeEventData()
     if (tableRow === null) {

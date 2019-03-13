@@ -6,7 +6,7 @@ import {parseHrtimeToSeconds} from './resources/helpers'
 class SkyBetCrawler extends BaseCrawler {
 	baseURL = 'https://m.skybet.com';
 
-	run = async () => {
+	run = async ():Promise<Array<EventData>> => {
 		const startTime = process.hrtime()
 
 		const baseUrlDom = await this.fetchHtml(`${this.baseURL}/esports`);
@@ -27,7 +27,7 @@ class SkyBetCrawler extends BaseCrawler {
 		return matchDataList;
 	}
 
-	getPathToAllMatchesByDay = async (allDom: string | null) => {
+	getPathToAllMatchesByDay = async (allDom: string | null): Promise<string> => {
 
 		if (isNil(allDom) || allDom === '')
 			throw Error('getAllMatchesByDayPath got no table html to work with')

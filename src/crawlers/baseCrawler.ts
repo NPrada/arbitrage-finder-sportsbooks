@@ -73,7 +73,7 @@ export default class BaseCrawler {
 	}
 
 	//makes a http request and returns the entire dom
-	fetchHtml = async (url: string) => {
+	fetchHtml = async (url: string): Promise<string> => {
 		let allDom = ''
 		await request({
 			url: url,
@@ -91,7 +91,7 @@ export default class BaseCrawler {
 	applyRegex = (string: string, regex: RegExp) => {
 		if (string === '') throw 'ERROR: the string we are ment to match with is blank';
 
-		if (string.match(regex) !== null && string.match(regex)!.length === 1) {
+		if (regex.test(string) && string.match(regex)!.length === 1) {
 			return string.match(regex)![0].trim()
 		} else {
 			throw `ERROR: some error with finding the substring using ${regex} on ${string}`;
