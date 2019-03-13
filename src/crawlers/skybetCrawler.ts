@@ -10,8 +10,8 @@ class SkyBetCrawler extends BaseCrawler {
 		const startTime = process.hrtime()
 
 		const baseUrlDom = await this.fetchHtml(`${this.baseURL}/esports`);
-		const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom)
-
+		const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
+		
 		let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
 
 		const $ = cheerio.load(allDom);
@@ -33,15 +33,17 @@ class SkyBetCrawler extends BaseCrawler {
 			throw Error('getAllMatchesByDayPath got no table html to work with')
 
 		const $ = cheerio.load(allDom);
-		//TODO improvement check you found the correct Acummulators button by doin toLowercase eg
+		
 		const marketsListPath = $('span:contains("Accumulators")', '#page-content')
-			.closest('li')
-			.find("[data-analytics='[Coupons]'] ")
-			.find('b:contains("All Matches By Day")') //check you found the correct link
-			.parent()
+			.closest('li') 									//goes back up to the whole accordion container
+			.find('tbody > tr').filter((index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
+				const regex = /(?<!.)(all\s+matches\s+by\s+day)(?!.)/g
+				return regex.test($(elem).find("b").text().trim().toLowerCase())
+			})
+			.find("[data-analytics='[Coupons]']")
 			.attr('href')
-
-		//TODO add better error checking
+	
+		//TODO add better error checking, eg: we didnt find the correct All Matches By Day
 		if (isNil(marketsListPath)) throw Error('Crawler was unable to get the link to the markets by day page')
 
 		return marketsListPath
@@ -65,10 +67,10 @@ class SkyBetCrawler extends BaseCrawler {
 
 			//go through the rows on by one
 			rowElem = tableRows.eq(i)
-			const findHeaderText = rowElem.find('td.group-header').text(); //eg: LOL - LEC – 21:10
+			const findHeaderText = rowElem.find('td.group-header').text().trim(); //eg: LOL - LEC – 21:10
 
 			if (findHeaderText !== '') {
-				currHeaderText = findHeaderText.trim() //update the Header text that is being used
+				currHeaderText = findHeaderText //update the Header text that is being used,
 			} else {
 				try {
 					const matchNameString = rowElem.find('a[href] > b').text()
