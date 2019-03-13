@@ -40,7 +40,7 @@ class EGBCrawler extends BaseCrawler {
 
     await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-		
+    console.log(matchDataList)
     console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
     return matchDataList
   }
@@ -61,7 +61,7 @@ class EGBCrawler extends BaseCrawler {
 
     return {
       ...rawRowData,
-      sportName: this.applyRegex(rawRowData.sportName, sportNameRegex).trim().toLowerCase(),
+      sportName: rawRowData.sportName.toLowerCase().replace(/ /g,''),
       date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
     }
   }
@@ -80,15 +80,15 @@ class EGBCrawler extends BaseCrawler {
 
 
     matchData.date = tableRow.find("[itemprop='startDate']").attr('content')
-    matchData.sportName = tableRow.find(".table-bets__content > [itemprop='name']").attr('content')
+    matchData.sportName = tableRow.find(".table-bets__content").find(".table-bets__event > img").attr('alt')
     matchData.eventName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
     matchData.team1.name = tableRow.find('.table-bets__player1 > span').attr('title')
     matchData.team2.name = tableRow.find('.table-bets__player2 > span').attr('title')
     matchData.team1.odds = tableRow.find('.table-bets__col-1').find('.bet-rate').text()
     matchData.team2.odds = tableRow.find('.table-bets__col-3').find('.bet-rate').text()
-
+      
     //TODO add puppeteer click on row and get url since its just clientside 
-
+    
     return matchData
   }
 }
