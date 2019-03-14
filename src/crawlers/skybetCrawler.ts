@@ -53,7 +53,7 @@ class SkyBetCrawler extends BaseCrawler {
 
       
     if (isNil(marketsListPath)) throw Error('Crawler was unable to get the link to the markets by day page')
-    console.log(marketsListPath)
+  
     return marketsListPath
   }
 
