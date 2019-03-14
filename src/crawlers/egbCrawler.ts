@@ -14,7 +14,10 @@ class EGBCrawler extends BaseCrawler {
 
 			const browser = await puppeteer.launch();
 			const page = await browser.newPage();
-			await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
+      await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
+      await page.setUserAgent(this.fakeUA())
+      await page.setViewport({width: 1500, height:1000})
+      
       await page.waitForSelector("#app")
 			let allDom = await page.evaluate(() => {
         if(document !== null && document.getElementById("app") !== null) {         

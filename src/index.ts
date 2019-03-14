@@ -30,9 +30,9 @@ const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
 
 const crawlerTask = async () => {
-  const skyResults = await skyBetCrawler.run()
+  // const skyResults = await skyBetCrawler.run()
   // console.log(skyResults)
-  const egbResults = await egbCrawler.run()
+  // const egbResults = await egbCrawler.run()
   // console.log(egbResults)
 }
 
