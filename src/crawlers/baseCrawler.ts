@@ -1,18 +1,19 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
+import { raw } from 'body-parser';
 
 
 //TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
 type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
 export type SportBookIds = 'skybet' | 'egb'
-
+//TODO fix the types to use parsed and raw data type
 export interface EventData {
     sportbookId: string
     eventName: string | null
     sportName: string | null
     date: string | null
-    team1: { name: string | null, odds: string | null }
-    team2: { name: string | null, odds: string | null }
+    team1: { name: string | null, odds: string | null | number}
+    team2: { name: string | null, odds: string | null | number}
     matchType?: string | null
     pageHref?: string | null
     error?: string | null
@@ -68,8 +69,26 @@ export default class BaseCrawler {
     
     //gets a random user agent
     fakeUA = (): string => {
-        return UAs[Math.floor(Math.random() * UAs.length)]
+			return UAs[Math.floor(Math.random() * UAs.length)]
     }
+
+		formatOdds = (rawOdd: any):number => {
+			if(rawOdd === '' )
+				throw 'odd patter was unrecognized'
+
+			let parsedOdd: number
+
+			if(rawOdd.indexOf('/') !== -1){
+				const twoNum: Array<string> = rawOdd.split('/')
+        parsedOdd = Math.floor((Number(twoNum[0])/Number(twoNum[1])+1)*100)/100
+			}else{
+				parsedOdd = Number(rawOdd)
+			}
+			
+			if(isNaN(parsedOdd)) throw 'odd patter was unrecognized & could not convert to number'
+
+			return parsedOdd
+		}
 
     //makes a http request and returns the entire dom
     fetchHtml = async (url: string): Promise<string> => {

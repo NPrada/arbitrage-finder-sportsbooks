@@ -135,8 +135,12 @@ class SkyBetCrawler extends BaseCrawler {
         date: this.getRegexSubstr(rawRowData.date, timeRegex) + ' ' + extraData.date,
         eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
         sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
-        team1: {...rawRowData.team1, name: this.getRegexSubstr(rawRowData.team1.name, team1regx)},
-        team2: {...rawRowData.team2, name: this.getRegexSubstr(rawRowData.team2.name, team2regx)},
+				team1: {
+					name: this.getRegexSubstr(rawRowData.team1.name, team1regx), 
+					odds: this.formatOdds(rawRowData.team1.odds) },
+				team2: {
+					name: this.getRegexSubstr(rawRowData.team2.name, team2regx), 
+					odds: this.formatOdds(rawRowData.team2.odds)},
       }
     }catch(e){
       

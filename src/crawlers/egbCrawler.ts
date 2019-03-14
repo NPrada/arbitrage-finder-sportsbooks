@@ -90,7 +90,7 @@ class EGBCrawler extends BaseCrawler {
       if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
       if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
       if (rawRowData.error) throw rawRowData.error
-  
+			
       return {
         ...rawRowData,
         sportName: this.standardiseSportName(rawRowData.sportName),
