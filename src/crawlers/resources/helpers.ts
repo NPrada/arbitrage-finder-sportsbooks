@@ -11,7 +11,8 @@ export const logHtml = (html: string | null | undefined) => {
 	});
 }
 
-export function parseHrtimeToSeconds(hrtime: any) {
+//converts the hrtime into seconds 
+export function parseHrtimeToSeconds(hrtime: Array<number>) {
     var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
     return seconds;
 }

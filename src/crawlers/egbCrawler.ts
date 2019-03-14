@@ -15,7 +15,7 @@ class EGBCrawler extends BaseCrawler {
 			const browser = await puppeteer.launch();
 			const page = await browser.newPage();
 			await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
-	
+      await page.waitForSelector("#app")
 			let allDom = await page.evaluate(() => {
         if(document !== null && document.getElementById("app") !== null) {         
           return document.getElementById("app")!.innerHTML
@@ -40,8 +40,8 @@ class EGBCrawler extends BaseCrawler {
 			}
 
 			await browser.close();
-			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-			if(!matchDataList.length) throw Error('No errors logged but we didnt get any match data at all')
+      const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			if(!matchDataList.length) throw Error('No errors logged but we didnt get any match data at all try restarting')
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
 			return matchDataList
 		}catch(err){
