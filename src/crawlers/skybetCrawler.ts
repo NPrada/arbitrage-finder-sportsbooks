@@ -116,9 +116,9 @@ class SkyBetCrawler extends BaseCrawler {
   
   parseRawData = (rawRowData: EventData, extraData: extraDataType): EventData | null => {
     try{
-      if (!rawRowData.sportName) throw 'No raw sport name was found'   	//TODO throw an error and log it
-      if (!rawRowData.date) throw 'No raw date info was found'        	//TODO throw an error and log it
-      if (!rawRowData.eventName) throw 'No raw event name was found'   	//TODO throw an error and log it
+      if (!rawRowData.sportName) throw 'No raw sport name was found'   	
+      if (!rawRowData.date) throw 'No raw date info was found'        	
+      if (!rawRowData.eventName) throw 'No raw event name was found'   	
       if (!rawRowData.team1 || !rawRowData.team2) throw 'No team data was found'
       if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
       if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
@@ -139,7 +139,7 @@ class SkyBetCrawler extends BaseCrawler {
         team2: {...rawRowData.team2, name: this.getRegexSubstr(rawRowData.team2.name, team2regx)},
       }
     }catch(e){
-      //TODO throw an error and log it
+      
       console.log('Non Blocking Error:',e)
       return null
     }

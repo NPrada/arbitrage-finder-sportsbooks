@@ -48,32 +48,6 @@ class EGBCrawler extends BaseCrawler {
 			console.log("CRITICAL ERROR:",err)
 			return []
 		}
-  
-  }
-
-  //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
-  parseRawData = (rawRowData: EventData): EventData | null => {
-
-    //check if any values are not truthy (null || "" || 'undefined' etc..)
-    if (!rawRowData.sportName) return null   	//TODO throw an error and log it
-    if (!rawRowData.date) return null        	//TODO throw an error and log it
-    if (!rawRowData.eventName) return null   	//TODO throw an error and log it
-    if (!rawRowData.team1 || !rawRowData.team2) return null
-    if (!rawRowData.team1.name || !rawRowData.team2.name) return null
-    if (!rawRowData.team1.odds || !rawRowData.team2.odds) return null
-		if (rawRowData.error) return null
-
-    try{
-      return {
-        ...rawRowData,
-        sportName: this.standardiseSportName(rawRowData.sportName),
-        date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
-      }
-    }catch(e){
-      //TODO throw an error and log it
-      console.log(e)
-      return null
-    }
   }
 
   //gets the raw data for each field that then needs to be parsed
@@ -84,7 +58,7 @@ class EGBCrawler extends BaseCrawler {
       return matchData
     }
 
-    if (tableRow.find('.table-bets__col-1').find('.no-border').text() !== '') {
+    if (tableRow.find('.table-bets__col-1').find('.no-border').text() !== '') { //check if you can still bet on the game
       matchData.error = 'This market is live or has expired'
       return matchData
     }
@@ -101,6 +75,28 @@ class EGBCrawler extends BaseCrawler {
     //TODO add puppeteer click on row and get url since its just clientside 
 
     return matchData
+  }
+
+  //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
+  parseRawData = (rawRowData: EventData): EventData | null => {
+    try{
+      if (!rawRowData.sportName) throw 'No raw sport name was found'   	
+      if (!rawRowData.date) throw 'No raw date info was found'        	
+      if (!rawRowData.eventName) throw 'No raw event name was found'   	
+      if (!rawRowData.team1 || !rawRowData.team2) throw 'No team data was found'
+      if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
+      if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
+      if (rawRowData.error) throw rawRowData.error
+  
+      return {
+        ...rawRowData,
+        sportName: this.standardiseSportName(rawRowData.sportName),
+        date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
+      }
+    }catch(e){
+      console.log(e)
+      return null
+    }
   }
 }
 
