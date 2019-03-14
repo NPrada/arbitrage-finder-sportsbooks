@@ -24,7 +24,8 @@ function getProfitMargin(ev1: number, ev2: number, stake: number) {
 // import runSkyBetCrawler from './crawlers/skybetCrawler'
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
-
+import ArbSearch from './arbitrageSearch'
+import {exampleCrawlerResponse} from './crawlers/resources/crawlResponse'
 
 const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
@@ -32,8 +33,13 @@ const skyBetCrawler = new SkyBetCrawler('skybet')
 const crawlerTask = async () => {
   // const skyResults = await skyBetCrawler.run()
   // console.log(skyResults)
+  // console.log('------------------------------------')
   // const egbResults = await egbCrawler.run()
   // console.log(egbResults)
+
+  const arbMatcher = new ArbSearch(exampleCrawlerResponse)
+
+  arbMatcher.search()
 }
 
 crawlerTask()

@@ -4,7 +4,7 @@ import { UAs } from './resources/useragentList'
 
 //TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
 type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
-type SportBookIds = 'skybet' | 'egb'
+export type SportBookIds = 'skybet' | 'egb'
 
 export interface EventData {
     sportbookId: string
