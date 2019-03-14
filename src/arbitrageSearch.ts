@@ -17,7 +17,7 @@ export default class ArbSearch {
   search = () => {
     
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
-    const matchesFound:any = []
+    const matchesFound: Array<{elem1: EventData, elem2: EventData}> = []
     
     this.allGamesCrawled[sportbookIds[0]].map( elem1 => {
       this.allGamesCrawled[sportbookIds[1]].map( elem2 => {
@@ -27,7 +27,7 @@ export default class ArbSearch {
     
 
     //TODO check if a single event matches to multiple events on the same sportsbook
-    console.log(`Out of ${this.allGamesCrawled[sportbookIds[0]].length} games on ${sportbookIds[0]} we found ${matchesFound.length} matches`)
+    console.log(`Out of ${this.allGamesCrawled[sportbookIds[0]].length} games on ${sportbookIds[0]} we found ${matchesFound.length} matches ~${Math.round((matchesFound.length/this.allGamesCrawled[sportbookIds[0]].length)*10000)/100}%`)
   }
 
   isMatching = (match1:EventData, match2:EventData):boolean => {
@@ -41,7 +41,6 @@ export default class ArbSearch {
       return true
         //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
          
-    
     return false
   }
 }
