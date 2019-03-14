@@ -3,7 +3,6 @@ import { UAs } from './resources/useragentList'
 
 
 //TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
-//TODO add a standardise sportname function
 type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
 type SportBookIds = 'skybet' | 'egb'
 
@@ -88,7 +87,7 @@ export default class BaseCrawler {
 	}
 
 	//applies a regex to a string and throws an error if it fails in some way
-	applyRegex = (string: string, regex: RegExp) => {
+	getRegexSubstr = (string: string, regex: RegExp):string => {
 		if (string === '') throw 'ERROR: the string we are ment to match with is blank';
 
 		if (regex.test(string) && string.match(regex)!.length === 1) {

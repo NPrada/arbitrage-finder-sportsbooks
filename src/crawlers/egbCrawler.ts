@@ -10,38 +10,42 @@ class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 
   run = async ():Promise<Array<EventData>> => {
-    //const allDom = await fetchHtml(`${baseURL}/play/simple_bets`);
-    const startTime = process.hrtime()
+    try{
+			const startTime = process.hrtime()
 
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
+			const browser = await puppeteer.launch();
+			const page = await browser.newPage();
+			await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
+	
+			let allDom = await page.evaluate(() => document.body.innerHTML);
+	
+			if (isNil(allDom) || allDom === '')
+				throw `${this.baseURL}/play/simple_bets got no dom`
+	
+			const $ = cheerio.load(allDom)
+			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
+	
+			if (eventsTable === null)
+				throw `Error: could not find the table containing all the events`
+	
+			const matchDataList: Array<EventData> = []
+	
+			for (let i = 0; i < eventsTable.length; i++) {
+				const rawData = this.getRawRowData(eventsTable.eq(i))
+				const parsedData = this.parseRawData(rawData)
+				if (parsedData !== null) matchDataList.push(parsedData)
+			}
 
-    let allDom = await page.evaluate(() => document.body.innerHTML);
-
-    if (isNil(allDom) || allDom === '')
-      throw `${this.baseURL}/play/simple_bets got no dom`
-
-    const $ = cheerio.load(allDom)
-    const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
-
-    if (eventsTable === null)
-      throw `Error: could not find the table containing all the events`
-
-    const matchDataList: Array<EventData> = []
-
-    for (let i = 0; i < eventsTable.length; i++) {
-      const rawData = this.getRawRowData(eventsTable.eq(i))
-      const parsedData = this.parseRawData(rawData)
-      if (parsedData !== null) matchDataList.push(parsedData)
-    }
-
-
-
-    await browser.close();
-		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-    console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
-    return matchDataList
+			await browser.close();
+			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			if(matchDataList.length) throw Error('No errors logged but we didnt get any match data at all')
+			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
+			return matchDataList
+		}catch(err){
+			console.log("CRITICAL ERROR:",err)
+			return []
+		}
+  
   }
 
   //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
