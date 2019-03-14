@@ -4,7 +4,6 @@ import isNil from 'lodash/isNil'
 import BaseCrawler, {EventData} from './baseCrawler';
 import { parseHrtimeToSeconds } from './resources/helpers'
 
-
 //TODO this needs to be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
@@ -17,14 +16,18 @@ class EGBCrawler extends BaseCrawler {
 			const page = await browser.newPage();
 			await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
 	
-			let allDom = await page.evaluate(() => document.body.innerHTML);
-	
+			let allDom = await page.evaluate(() => {
+        if(document !== null && document.getElementById("app") !== null) {         
+          return document.getElementById("app")!.innerHTML
+        }
+      });
+
+
 			if (isNil(allDom) || allDom === '')
 				throw `${this.baseURL}/play/simple_bets got no dom`
 	
 			const $ = cheerio.load(allDom)
 			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
-	
 			if (eventsTable === null)
 				throw `Error: could not find the table containing all the events`
 	
@@ -32,13 +35,13 @@ class EGBCrawler extends BaseCrawler {
 	
 			for (let i = 0; i < eventsTable.length; i++) {
 				const rawData = this.getRawRowData(eventsTable.eq(i))
-				const parsedData = this.parseRawData(rawData)
-				if (parsedData !== null) matchDataList.push(parsedData)
+        const parsedData = this.parseRawData(rawData)
+        if (parsedData !== null) matchDataList.push(parsedData)
 			}
 
 			await browser.close();
 			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-			if(matchDataList.length) throw Error('No errors logged but we didnt get any match data at all')
+			if(!matchDataList.length) throw Error('No errors logged but we didnt get any match data at all')
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
 			return matchDataList
 		}catch(err){
@@ -86,7 +89,7 @@ class EGBCrawler extends BaseCrawler {
       return matchData
     }
 
-
+    
     matchData.date = tableRow.find("[itemprop='startDate']").attr('content')
     matchData.sportName = tableRow.find(".table-bets__content").find(".table-bets__event > img").attr('alt')
     matchData.eventName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
@@ -96,7 +99,7 @@ class EGBCrawler extends BaseCrawler {
     matchData.team2.odds = tableRow.find('.table-bets__col-3').find('.bet-rate').text()
       
     //TODO add puppeteer click on row and get url since its just clientside 
-    
+
     return matchData
   }
 }
