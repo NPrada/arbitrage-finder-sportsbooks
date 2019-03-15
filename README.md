@@ -1,8 +1,10 @@
 # arbitrage-finder
 project to find profitable arbitrages 
 
-###How to run
-`npm run build` runs the compiled main.js
+###Commands available
+`npm run build` compiles everything in src and runs index.js
+`npm run server` compiles everything in src and runs /server/server.js
+`npm run compile` compiles everything in src into dist
 
 ###Typescript FAQ
 
