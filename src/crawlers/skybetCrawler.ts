@@ -135,8 +135,13 @@ class SkyBetCrawler extends BaseCrawler {
     
       let rawDateString = `${extraData.date} ${this.getRegexSubstr(rawRowData.date, timeRegex)}` //puts all the info in a string
       rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
-      const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm') //parses the string into a date object
-
+      let parsedDate:any
+      if(date.isValid(rawDateString, 'D MMMM YYYY HH:mm')){
+        parsedDate = date.parse(rawDateString, 'D MMMM YYYY HH:mm') //parses the string into a date object
+      } else {
+        throw 'could not parse the date strig we got'
+      }
+      
       return {
         ...rawRowData,
         date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),

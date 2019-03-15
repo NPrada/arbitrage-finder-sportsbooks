@@ -92,7 +92,12 @@ class EGBCrawler extends BaseCrawler {
       if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
       if (rawRowData.error) throw rawRowData.error
       
-      const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
+      let parsedDate: any //TODO fix this type
+      if(date.isValid(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')){
+        parsedDate = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
+      } else {
+        throw 'could not parse the date strig we got'
+      }
 
       return {
         ...rawRowData,
