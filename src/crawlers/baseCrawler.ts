@@ -1,6 +1,5 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
-import { raw } from 'body-parser';
 
 
 //TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
