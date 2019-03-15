@@ -1,4 +1,5 @@
 import cheerio from 'cheerio'
+import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, { EventData } from './baseCrawler';
 import {parseHrtimeToSeconds} from './resources/helpers'
@@ -129,10 +130,16 @@ class SkyBetCrawler extends BaseCrawler {
       const sportNameRegx = /.+(?=\s*[\-\–\—]\s*.*\s*[\-\–\—])/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+      const cleanDateRegex = /([A-Z]\w+(?=\s\d+(th|st|nd|rd)))|(?<=\d+)(th|st|nd|rd)/g //eg: matches 'Sunday' and 'th' on: 'Saturday 16th March 2019 22:00' 
       
+    
+      let rawDateString = `${extraData.date} ${this.getRegexSubstr(rawRowData.date, timeRegex)}` //puts all the info in a string
+      rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
+      const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm') //parses the string into a date object
+
       return {
         ...rawRowData,
-        date: this.getRegexSubstr(rawRowData.date, timeRegex) + ' ' + extraData.date,
+        date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),
         eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
         sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
 				team1: {

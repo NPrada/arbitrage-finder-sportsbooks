@@ -33,13 +33,10 @@ const skyBetCrawler = new SkyBetCrawler('skybet')
 const crawlerTask = async () => {
   const skyResults = await skyBetCrawler.run()
 	// console.log(skyResults)
-  // console.log('------------------------------------')
   const egbResults = await egbCrawler.run()
   // console.log(egbResults)
 	const fullCrawlObject = {skybet: skyResults, egb:egbResults}
   const arbMatcher = new ArbSearch(fullCrawlObject)
-
-  arbMatcher.search()
 }
 
 crawlerTask()

@@ -1,5 +1,6 @@
 import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
+import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, {EventData} from './baseCrawler';
 import { parseHrtimeToSeconds } from './resources/helpers'
@@ -90,11 +91,13 @@ class EGBCrawler extends BaseCrawler {
       if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
       if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
       if (rawRowData.error) throw rawRowData.error
-			
+      
+      const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
+
       return {
         ...rawRowData,
         sportName: this.standardiseSportName(rawRowData.sportName),
-        date: rawRowData.date, //TODO add a check to see if it matches the format we want to store with
+        date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),
       }
     }catch(e){
       console.log(e)
