@@ -2,7 +2,7 @@ import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
 
 
-type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
+type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
 export type SportBookIds = 'skybet' | 'egb'
 
 export interface RawEventData {
@@ -58,7 +58,8 @@ export default class BaseCrawler {
         const lolRegex = /(league|l)[-—:_/](of|o)[-—:_/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
         const sc2Regex = /(?<!.)((starcraft|sc)[-—:_/]2|(starcraft|sc)(2|))(?!.)/g
         const overwatchRegex = /(?<!.)(ow|overwatch)(?!.)/g
-        const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_/]6[-—:_/]siege)(?!.)/g
+				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_/]6[-—:_/]siege)(?!.)/g
+				const callofdutyRegex = /(?<!.)(callofduty|cod)(?!.)|(call|c)[-—:_/](of|o)[-—:_/](duty|d)/g
 
         if(csgoRegex.test(parsedSportName))
             return 'csgo'
@@ -71,7 +72,9 @@ export default class BaseCrawler {
         else if(overwatchRegex.test(parsedSportName))
             return 'overwatch'
         else if(rainbow6Regex.test(parsedSportName))
-            return 'rainbow6'
+						return 'rainbow6'
+				else if(callofdutyRegex.test(parsedSportName))
+						return 'callofduty'
         else{
             throw `Error: unknown sportname -> ${parsedSportName}`
         }
