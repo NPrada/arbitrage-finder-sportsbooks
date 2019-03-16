@@ -48,9 +48,13 @@ class SkyBetCrawler extends BaseCrawler {
     
     const marketsListPath = $('span:contains("Accumulators")', '#page-content')
       .closest('li') 									//goes back up to the whole accordion container
-      .find('tbody > tr').filter((index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
-        const regex = /(?<!.)(all\s+matches\s+by\s+day)(?!.)/g
-        return regex.test($(elem).find("b").text().trim().toLowerCase())
+      .find('tbody > tr').filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
+				return ($(elem).find("b").text()
+									.trim()
+									.toLowerCase()
+									.split(' ')
+									.join('')
+									.indexOf("allmatchesbyday") !== -1)
       })
       .find("[data-analytics='[Coupons]']")
       .attr('href')
