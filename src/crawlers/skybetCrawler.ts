@@ -117,14 +117,15 @@ class SkyBetCrawler extends BaseCrawler {
   
   parseRawData = (rawRowData: RawEventData, extraData: extraDataType): ParsedEventData | null => {
     try{
+			
+			if (rawRowData.error) throw rawRowData.error
       if (!rawRowData.sportName) throw 'No raw sport name was found'   	
       if (!rawRowData.date) throw 'No raw date info was found'        	
       if (!rawRowData.eventName) throw 'No raw event name was found'   	
       if (!rawRowData.team1 || !rawRowData.team2) throw 'No team data was found'
       if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
       if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
-      if (rawRowData.error) throw rawRowData.error
-
+      
       const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'

@@ -87,7 +87,8 @@ class EGBCrawler extends BaseCrawler {
 
 			rawRowData.team1.odds = Number(rawRowData.team1.odds)
 			rawRowData.team2.odds = Number(rawRowData.team2.odds)
-			
+
+			if (rawRowData.error) throw rawRowData.error
       if (!rawRowData.sportName) throw 'No raw sport name was found'   	
       if (!rawRowData.date) throw 'No raw date info was found'        	
       if (!rawRowData.eventName) throw 'No raw event name was found'   	
@@ -95,7 +96,6 @@ class EGBCrawler extends BaseCrawler {
       if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
 			if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
 			if (isNaN(rawRowData.team1.odds) || isNaN(rawRowData.team2.odds)) throw 'Could not convert the odd string to a number'
-      if (rawRowData.error) throw rawRowData.error
       
       const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
 
