@@ -5,7 +5,7 @@ import { UAs } from './resources/useragentList'
 type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
 export type SportBookIds = 'skybet' | 'egb'
 
-export interface RawEventData {
+export interface RawMarketData {
     sportbookId: string
     eventName: string | null
     sportName: string | null
@@ -17,7 +17,7 @@ export interface RawEventData {
     error?: string | null
 }
 
-export interface ParsedEventData {
+export interface ParsedMarketData {
 	sportbookId: string
 	eventName: string
 	sportName: string 
@@ -38,7 +38,7 @@ export default class BaseCrawler {
 
     
     
-    initializeEventData = (): RawEventData => {
+    initializeEventData = (): RawMarketData => {
         return {
             sportbookId: this.sportBookId,
             eventName: null,
@@ -101,6 +101,20 @@ export default class BaseCrawler {
 			if(isNaN(parsedOdd)) throw 'odd patter was unrecognized & could not convert to number'
 
 			return parsedOdd
+		}
+
+		//checks for any errors and throws them if it finds any
+		checkForErrors = (rawMarketData: RawMarketData): string | null => {
+
+			if (rawMarketData.error) return rawMarketData.error
+      if (!rawMarketData.sportName) return 'No raw sport name was found'   	
+      if (!rawMarketData.date) return 'No raw date info was found'        	
+      if (!rawMarketData.eventName) return 'No raw event name was found'   	
+      if (!rawMarketData.team1 || !rawMarketData.team2) return 'No team data was found'
+      if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
+			if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
+			
+			return null
 		}
 
     //makes a http request and returns the entire dom

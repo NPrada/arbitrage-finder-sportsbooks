@@ -2,14 +2,14 @@ import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, {RawEventData, ParsedEventData} from './baseCrawler';
+import BaseCrawler, {RawMarketData, ParsedMarketData} from './baseCrawler';
 import { parseHrtimeToSeconds } from './resources/helpers'
 
 //TODO this needs to be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 
-  run = async ():Promise<Array<ParsedEventData>> => {
+  run = async ():Promise<Array<ParsedMarketData>> => {
     try{
 			const startTime = process.hrtime()
 
@@ -35,7 +35,7 @@ class EGBCrawler extends BaseCrawler {
 			if (eventsTable === null)
 				throw `Error: could not find the table containing all the events`
 	
-			const matchDataList: Array<ParsedEventData> = []
+			const matchDataList: Array<ParsedMarketData> = []
 	
 			for (let i = 0; i < eventsTable.length; i++) {
 				const rawData = this.getRawRowData(eventsTable.eq(i))
@@ -55,7 +55,7 @@ class EGBCrawler extends BaseCrawler {
   }
 
   //gets the raw data for each field that then needs to be parsed
-  getRawRowData = (tableRow: Cheerio | null): RawEventData => {
+  getRawRowData = (tableRow: Cheerio | null): RawMarketData => {
     const matchData = this.initializeEventData()
     if (tableRow === null) {
       matchData.error = 'We could not find html for this table row'
@@ -82,28 +82,33 @@ class EGBCrawler extends BaseCrawler {
   }
 
   //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
-  parseRawData = (rawRowData: RawEventData): ParsedEventData | null => {
+  parseRawData = (rawRowData: RawMarketData): ParsedMarketData | null => {
     try{
+
+			//look for any erros in the raw data and throw them if you find any
+			const rawDataError = this.checkForErrors(rawRowData)
+			if(rawDataError !== null){
+				throw rawDataError
+			}
 
 			rawRowData.team1.odds = Number(rawRowData.team1.odds)
 			rawRowData.team2.odds = Number(rawRowData.team2.odds)
-
-			if (rawRowData.error) throw rawRowData.error
-      if (!rawRowData.sportName) throw 'No raw sport name was found'   	
-      if (!rawRowData.date) throw 'No raw date info was found'        	
-      if (!rawRowData.eventName) throw 'No raw event name was found'   	
-      if (!rawRowData.team1 || !rawRowData.team2) throw 'No team data was found'
-      if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
-			if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
 			if (isNaN(rawRowData.team1.odds) || isNaN(rawRowData.team2.odds)) throw 'Could not convert the odd string to a number'
+			
+
+			let formattedDate: string
+			if(date.isValid(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')){
+				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
+				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
+			} else throw 'Problem parsing the date'
+
       
-      const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
 
       return {
 				sportbookId: rawRowData.sportbookId,
 				eventName: rawRowData.eventName,
         sportName: this.standardiseSportName(rawRowData.sportName),
-				date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),
+				date: formattedDate,
 				team1: {name: rawRowData.team1.name, odds: rawRowData.team1.odds},
 				team2: {name: rawRowData.team2.name, odds: rawRowData.team2.odds}
       }

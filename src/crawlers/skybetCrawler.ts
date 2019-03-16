@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, { RawEventData ,ParsedEventData } from './baseCrawler';
+import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
 import {parseHrtimeToSeconds} from './resources/helpers'
 
 type extraDataType = {date: string}
@@ -9,7 +9,7 @@ type extraDataType = {date: string}
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
-  run = async ():Promise<Array<ParsedEventData>> => {
+  run = async ():Promise<Array<ParsedMarketData>> => {
     try{
       const startTime = process.hrtime()
 
@@ -21,7 +21,7 @@ class SkyBetCrawler extends BaseCrawler {
       const $ = cheerio.load(allDom);
       const allDayTables = $('ul.table-group', '#page-content').find('li')
   
-      const matchDataList: Array<ParsedEventData> = []
+      const matchDataList: Array<ParsedMarketData> = []
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
@@ -58,14 +58,14 @@ class SkyBetCrawler extends BaseCrawler {
     return marketsListPath
   }
 
-  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedEventData> => {
+  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedMarketData> => {
 
     if (isNil(tableHtml) || tableHtml === '')
       throw Error('getMatchDataFromDayTable got no table html to work with')
 
     const $ = cheerio.load(tableHtml);
 
-    const data: Array<ParsedEventData> = []
+    const data: Array<ParsedMarketData> = []
     let rowElem: Cheerio
     let currHeaderText: string = ''
 
@@ -115,16 +115,14 @@ class SkyBetCrawler extends BaseCrawler {
     return data;
     }
   
-  parseRawData = (rawRowData: RawEventData, extraData: extraDataType): ParsedEventData | null => {
+  parseRawData = (rawRowData: RawMarketData, extraData: extraDataType): ParsedMarketData | null => {
     try{
-			
-			if (rawRowData.error) throw rawRowData.error
-      if (!rawRowData.sportName) throw 'No raw sport name was found'   	
-      if (!rawRowData.date) throw 'No raw date info was found'        	
-      if (!rawRowData.eventName) throw 'No raw event name was found'   	
-      if (!rawRowData.team1 || !rawRowData.team2) throw 'No team data was found'
-      if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
-      if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
+
+			//look for any erros in the raw data and throw them if you find any
+			const rawDataError = this.checkForErrors(rawRowData)
+			if(rawDataError !== null){
+				throw rawDataError
+			}
       
       const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
@@ -135,12 +133,18 @@ class SkyBetCrawler extends BaseCrawler {
       
     
       let rawDateString = `${extraData.date} ${this.getRegexSubstr(rawRowData.date, timeRegex)}` //puts all the info in a string
-      rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
-      const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm') //parses the string into a date object
-
+			rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
+			
+			let formattedDate: string
+			if(date.isValid(rawDateString, 'D MMMM YYYY HH:mm')){
+				const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm')
+				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
+			} else throw 'Problem parsing the date'
+		
+			
       return {
 				sportbookId: rawRowData.sportbookId,
-        date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),
+        date: formattedDate,
         eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
         sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
 				team1: {
