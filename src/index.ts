@@ -8,6 +8,7 @@
 
 
 // import runSkyBetCrawler from './crawlers/skybetCrawler'
+import {ParsedMarketData} from './crawlers/baseCrawler'
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
 import ArbSearch from './arbitrageSearch'
@@ -17,9 +18,10 @@ const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
 
 const crawlerTask = async () => {
-  const skyResults = await skyBetCrawler.run()
-	// console.log(skyResults)
-  // const egbResults = await egbCrawler.run()
+  const skyResults = skyBetCrawler.run()
+	const egbResults = egbCrawler.run()
+	
+	const allResuls = [await skyResults, await egbResults]; //waits for both functions to finish before continuing
   // console.log(egbResults)
 	// const fullCrawlObject = {skybet: skyResults, egb:egbResults}
 	// const arbFinder = new ArbSearch(fullCrawlObject)
