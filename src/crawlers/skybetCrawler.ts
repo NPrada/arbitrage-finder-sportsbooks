@@ -2,7 +2,7 @@ import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
-import {parseHrtimeToSeconds} from './resources/helpers'
+import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
 
 type extraDataType = {date: string}
 
@@ -14,8 +14,11 @@ class SkyBetCrawler extends BaseCrawler {
       const startTime = process.hrtime()
 
       const baseUrlDom = await this.fetchHtml(`${this.baseURL}/esports`);
-      const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
-      
+			const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
+
+			//just wait random time before fetching the next page to thow off that we are a bot
+			await this.sleep(getRandomArbitrary(0.5,6)*1000) 
+			
       let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
   
       const $ = cheerio.load(allDom);

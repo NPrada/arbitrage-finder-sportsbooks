@@ -36,7 +36,7 @@ export default class BaseCrawler {
         this.sportBookId = sportBookId
     }
 
-    
+		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promis so we can just use await
     
     initializeEventData = (): RawMarketData => {
         return {

@@ -16,3 +16,7 @@ export function parseHrtimeToSeconds(hrtime: Array<number>) {
     var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
     return seconds;
 }
+
+export function getRandomArbitrary(min:number, max:number):number {
+  return Math.random() * (max - min) + min;
+}
