@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && echo typescript compiled successfully..  && node dist/index.js"
+    "build": "tsc && echo typescript compiled successfully..  && node dist/index.js",
+    "server": "tsc && echo typescript compiled successfully.. && node dist/server/server.js",
+    "compile": "tsc && echo typescript compiled successfully.."
   },
   "repository": {
     "type": "git",
@@ -14,19 +16,29 @@
   "author": "NP",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
+    "date-and-time": "^0.6.3",
     "dotenv": "^6.2.0",
+    "express": "^4.16.4",
     "lodash": "^4.17.11",
+    "mongoose": "^5.4.19",
+    "morgan": "^1.9.1",
     "puppeteer": "^1.13.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
   },
   "devDependencies": {
-    "@types/puppeteer": "^1.12.2",
-    "@types/dotenv": "^6.1.0",
+    "@types/body-parser": "^1.17.0",
     "@types/cheerio": "^0.22.11",
+    "@types/date-and-time": "^0.6.0",
+    "@types/dotenv": "^6.1.0",
+    "@types/express": "^4.16.1",
     "@types/lodash": "^4.14.122",
+    "@types/mongoose": "^5.3.21",
+    "@types/morgan": "^1.7.35",
     "@types/node": "^11.10.5",
+    "@types/puppeteer": "^1.12.2",
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.15",
     "typescript": "^3.3.3333"
