@@ -2,20 +2,31 @@ import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
 
 
-//TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
 type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
 export type SportBookIds = 'skybet' | 'egb'
-//TODO fix the types to use parsed and raw data type
-export interface EventData {
+
+export interface RawEventData {
     sportbookId: string
     eventName: string | null
     sportName: string | null
     date: string | null
-    team1: { name: string | null, odds: string | null | number}
+    team1: { name: string | null, odds: string | null | number} 
     team2: { name: string | null, odds: string | null | number}
     matchType?: string | null
     pageHref?: string | null
     error?: string | null
+}
+
+export interface ParsedEventData {
+	sportbookId: string
+	eventName: string
+	sportName: string 
+	date: string 
+	team1: { name: string , odds: number}
+	team2: { name: string , odds: number}
+	matchType?: string 
+	pageHref?: string
+	error?: string 
 }
 
 export default class BaseCrawler {
@@ -27,7 +38,7 @@ export default class BaseCrawler {
 
     
     
-    initializeEventData = (): EventData => {
+    initializeEventData = (): RawEventData => {
         return {
             sportbookId: this.sportBookId,
             eventName: null,

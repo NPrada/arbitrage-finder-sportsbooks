@@ -22,8 +22,8 @@ const crawlerTask = async () => {
   const egbResults = await egbCrawler.run()
   // console.log(egbResults)
 	const fullCrawlObject = {skybet: skyResults, egb:egbResults}
-	const arbMatcher = new ArbSearch(fullCrawlObject)
-	arbMatcher.search()
+	const arbFinder = new ArbSearch(fullCrawlObject)
+	arbFinder.search()
 }
 
 crawlerTask()

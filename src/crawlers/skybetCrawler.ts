@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, { EventData } from './baseCrawler';
+import BaseCrawler, { RawEventData ,ParsedEventData } from './baseCrawler';
 import {parseHrtimeToSeconds} from './resources/helpers'
 
 type extraDataType = {date: string}
@@ -9,7 +9,7 @@ type extraDataType = {date: string}
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
-  run = async ():Promise<Array<EventData>> => {
+  run = async ():Promise<Array<ParsedEventData>> => {
     try{
       const startTime = process.hrtime()
 
@@ -21,7 +21,7 @@ class SkyBetCrawler extends BaseCrawler {
       const $ = cheerio.load(allDom);
       const allDayTables = $('ul.table-group', '#page-content').find('li')
   
-      const matchDataList: Array<EventData> = []
+      const matchDataList: Array<ParsedEventData> = []
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
@@ -58,14 +58,14 @@ class SkyBetCrawler extends BaseCrawler {
     return marketsListPath
   }
 
-  getMatchDataFromDayTable = (tableHtml: string | null): Array<EventData> => {
+  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedEventData> => {
 
     if (isNil(tableHtml) || tableHtml === '')
       throw Error('getMatchDataFromDayTable got no table html to work with')
 
     const $ = cheerio.load(tableHtml);
 
-    const data: Array<EventData> = []
+    const data: Array<ParsedEventData> = []
     let rowElem: Cheerio
     let currHeaderText: string = ''
 
@@ -115,7 +115,7 @@ class SkyBetCrawler extends BaseCrawler {
     return data;
     }
   
-  parseRawData = (rawRowData: EventData, extraData: extraDataType): EventData | null => {
+  parseRawData = (rawRowData: RawEventData, extraData: extraDataType): ParsedEventData | null => {
     try{
       if (!rawRowData.sportName) throw 'No raw sport name was found'   	
       if (!rawRowData.date) throw 'No raw date info was found'        	
@@ -138,7 +138,7 @@ class SkyBetCrawler extends BaseCrawler {
       const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm') //parses the string into a date object
 
       return {
-        ...rawRowData,
+				sportbookId: rawRowData.sportbookId,
         date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),
         eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
         sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
