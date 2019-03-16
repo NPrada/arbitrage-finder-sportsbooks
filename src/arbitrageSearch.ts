@@ -43,7 +43,7 @@ export default class ArbSearch {
     })});
 		
 		let profitMargins: Array<{market1: ParsedMarketData, market2: ParsedMarketData, profitInfo:BetStats }> = []
-		matchesFound.map( (match:{market1:ParsedMarketData, market2: ParsedMarketData}) => { //TODO fix the any
+		matchesFound.map( (match:{market1:ParsedMarketData, market2: ParsedMarketData}) => { 
 			const team1Max = Math.max(match.market1.team1.odds, match.market2.team1.odds)
 			const team2Max = Math.max(match.market1.team2.odds, match.market2.team2.odds)
 			
