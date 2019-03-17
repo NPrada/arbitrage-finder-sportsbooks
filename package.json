@@ -24,6 +24,7 @@
     "lodash": "^4.17.11",
     "mongoose": "^5.4.19",
     "morgan": "^1.9.1",
+    "nodemailer": "^5.1.1",
     "puppeteer": "^1.13.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
@@ -38,6 +39,7 @@
     "@types/mongoose": "^5.3.21",
     "@types/morgan": "^1.7.35",
     "@types/node": "^11.10.5",
+    "@types/nodemailer": "^4.6.6",
     "@types/puppeteer": "^1.12.2",
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.15",

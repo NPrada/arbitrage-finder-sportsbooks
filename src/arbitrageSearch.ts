@@ -3,7 +3,7 @@ import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import { type } from 'os';
 
-type FullMatchData = {
+export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedMarketData>;
 }; 
 
@@ -33,7 +33,9 @@ export default class ArbSearch {
     
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
     const matchesFound: Array<{market1: ParsedMarketData, market2: ParsedMarketData}> = []
-    
+		
+		console.log(this.allGamesCrawled[sportbookIds[0]])
+
     this.allGamesCrawled[sportbookIds[0]].map( market1 => {
       this.allGamesCrawled[sportbookIds[1]].map( market2 => {
 		
