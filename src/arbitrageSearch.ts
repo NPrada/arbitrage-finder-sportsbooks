@@ -36,7 +36,7 @@ export default class ArbSearch {
 		
     this.allGamesCrawled[sportbookIds[0]].map( market1 => {
       this.allGamesCrawled[sportbookIds[1]].map( market2 => {
-		
+				
 				if(this.isMatching(market1,market2)){
 					matchesFound.push({market1,market2})
 				}
@@ -55,8 +55,9 @@ export default class ArbSearch {
 		})
 
 		//TODO check if a single event matches to multiple events on the same sportsbook
-		console.log(this.buildResultsReport(profitMargins))
-		return this.buildResultsReport(profitMargins)
+		const resultreport = this.buildResultsReport(profitMargins)
+		console.log(resultreport)
+		return resultreport
 	}
 	
 	getProfitMargin = (ev1: number, ev2: number, stake: number):BetStats => {
@@ -92,12 +93,12 @@ export default class ArbSearch {
 		//check if any were profitable
 		let countProfitable = 0
 		let findingsString = ''
-		matchesFound.map(elem => {
+
+		matchesFound.map((elem,i) => {
+			console.log(`${i+1}. Profitability: ${elem.profitInfo.returnOnInvestment}% `)
 			if (elem.profitInfo.returnOnInvestment > 0 ){
 				countProfitable++
 				findingsString += JSON.stringify(elem, undefined, 2)
-
-				console.log('---------------------------------------')
 				console.log(JSON.stringify(elem, undefined, 2))	
 				console.log('SUCCESS: we found a profitable arbitrage!!')
 			}
@@ -110,18 +111,27 @@ export default class ArbSearch {
 ${countProfitable} were profitable arbitrages.
 ${findingsString}`
 	}
-
+	
   isMatching = (match1:ParsedMarketData, match2:ParsedMarketData):boolean => {
     if (isNil(match1.eventName) || isNil(match2.eventName))
       return false
     if (isNil(match1.team1.name) || isNil(match2.team1.name) || isNil(match1.team2.name) || isNil(match2.team2.name))
       return false
-
-		if (match1.team1.name.toLowerCase() === match2.team1.name.toLowerCase() && 
-				match1.team2.name.toLowerCase() === match2.team2.name.toLowerCase())
-			if(match1.date === match2.date) 
-      	if (match1.sportName === match2.sportName)
-      		return true
+		
+		if(match1.sportName === match2.sportName){
+			debugger
+		}
+			
+		if (match1.team1.name.toLowerCase() === match2.team1.name.toLowerCase() ||
+				match1.team2.name.toLowerCase() === match2.team2.name.toLowerCase()){
+					if(match1.date === match2.date){
+						if (match1.sportName === match2.sportName)
+							console.log('------------true ------------')
+							return true
+					} 
+				
+		}		
+		
         //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
          
     return false

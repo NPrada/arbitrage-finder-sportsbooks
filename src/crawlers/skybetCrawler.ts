@@ -5,7 +5,7 @@ import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
 import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
 
 type extraDataType = {date: string}
-
+//TODO 
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
@@ -31,7 +31,7 @@ class SkyBetCrawler extends BaseCrawler {
   
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
-      return matchDataList;
+			return matchDataList;
     }catch(err){
       console.log('BLOCKING ERROR')
       console.log(err)
@@ -131,8 +131,8 @@ class SkyBetCrawler extends BaseCrawler {
 				throw rawDataError
 			}
       
-      const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-      const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+      const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+      const team2regx = /((?<=v\s\d\s)).+(?=(\s\())|((?<=\sv\s)).+(?=(\s\())/g 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'

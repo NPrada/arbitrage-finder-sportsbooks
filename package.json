@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && echo typescript compiled successfully..  && node dist/index.js",
+		"build": "tsc && echo typescript compiled successfully..  && node dist/index.js",
+		"build:inspect": "tsc && echo typescript compiled successfully..  && node --inspect dist/index.js",
     "server": "tsc && echo typescript compiled successfully.. && node dist/server/server.js",
     "compile": "tsc && echo typescript compiled successfully.."
   },
