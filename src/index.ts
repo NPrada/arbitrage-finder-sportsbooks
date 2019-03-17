@@ -31,9 +31,9 @@ const crawlerTask = async () => {
 	// console.log('?')
 	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
 	const arbFinder = new ArbSearch(fullCrawlObject)
-	arbFinder.search()
-	
-	sendMail('Arbitrage found','arb report')
+	const findingsReport = arbFinder.search()
+
+	sendMail('Arbitrage Findings Report',findingsReport)
 
 }
 

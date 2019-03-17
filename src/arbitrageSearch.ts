@@ -58,6 +58,7 @@ export default class ArbSearch {
 
 		//TODO check if a single event matches to multiple events on the same sportsbook
 		console.log(this.buildResultsReport(profitMargins))
+		return this.buildResultsReport(profitMargins)
 	}
 	
 	getProfitMargin = (ev1: number, ev2: number, stake: number):BetStats => {
@@ -92,9 +93,12 @@ export default class ArbSearch {
 
 		//check if any were profitable
 		let countProfitable = 0
+		let findingsString = ''
 		matchesFound.map(elem => {
 			if (elem.profitInfo.returnOnInvestment > 0 ){
 				countProfitable++
+				findingsString += JSON.stringify(elem, undefined, 2)
+
 				console.log('---------------------------------------')
 				console.log(JSON.stringify(elem, undefined, 2))	
 				console.log('SUCCESS: we found a profitable arbitrage!!')
@@ -104,8 +108,9 @@ export default class ArbSearch {
 		if(smallerResList === null) smallerResList = 0
 
 		const matchPercentage = Math.round((matchesFound.length / smallerResList)*10000)/100
-		return `Out of ${smallerResList} games on ${smallerSportsbook} we found ${matchesFound.length} matches ~${matchPercentage}%. 
-						${countProfitable} were profitable arbitrages.`
+		return `Out of ${smallerResList} games on ${smallerSportsbook} we found ${matchesFound.length} matches ~${matchPercentage}%.
+${countProfitable} were profitable arbitrages.
+${findingsString}`
 	}
 
   isMatching = (match1:ParsedMarketData, match2:ParsedMarketData):boolean => {
