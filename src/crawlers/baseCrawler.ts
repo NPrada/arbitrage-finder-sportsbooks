@@ -1,22 +1,32 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
-import { raw } from 'body-parser';
 
 
-//TODO add a mandatory date crawled field in the DD-MM-YYYYTHH-MM-SS format
-type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" //possible additions: hearthstone, rocket league(might have ties),
+type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
 export type SportBookIds = 'skybet' | 'egb'
-//TODO fix the types to use parsed and raw data type
-export interface EventData {
+
+export interface RawMarketData {
     sportbookId: string
     eventName: string | null
     sportName: string | null
     date: string | null
-    team1: { name: string | null, odds: string | null | number}
+    team1: { name: string | null, odds: string | null | number} 
     team2: { name: string | null, odds: string | null | number}
     matchType?: string | null
     pageHref?: string | null
     error?: string | null
+}
+
+export interface ParsedMarketData {
+	sportbookId: string
+	eventName: string
+	sportName: string 
+	date: string 
+	team1: { name: string , odds: number}
+	team2: { name: string , odds: number}
+	matchType?: string 
+	pageHref?: string
+	error?: string 
 }
 
 export default class BaseCrawler {
@@ -26,9 +36,9 @@ export default class BaseCrawler {
         this.sportBookId = sportBookId
     }
 
+		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promis so we can just use await
     
-    
-    initializeEventData = (): EventData => {
+    initializeEventData = (): RawMarketData => {
         return {
             sportbookId: this.sportBookId,
             eventName: null,
@@ -48,7 +58,8 @@ export default class BaseCrawler {
         const lolRegex = /(league|l)[-—:_/](of|o)[-—:_/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
         const sc2Regex = /(?<!.)((starcraft|sc)[-—:_/]2|(starcraft|sc)(2|))(?!.)/g
         const overwatchRegex = /(?<!.)(ow|overwatch)(?!.)/g
-        const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_/]6[-—:_/]siege)(?!.)/g
+				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_/]6[-—:_/]siege)(?!.)/g
+				const callofdutyRegex = /(?<!.)(callofduty|cod)(?!.)|(call|c)[-—:_/](of|o)[-—:_/](duty|d)/g
 
         if(csgoRegex.test(parsedSportName))
             return 'csgo'
@@ -61,7 +72,9 @@ export default class BaseCrawler {
         else if(overwatchRegex.test(parsedSportName))
             return 'overwatch'
         else if(rainbow6Regex.test(parsedSportName))
-            return 'rainbow6'
+						return 'rainbow6'
+				else if(callofdutyRegex.test(parsedSportName))
+						return 'callofduty'
         else{
             throw `Error: unknown sportname -> ${parsedSportName}`
         }
@@ -88,6 +101,20 @@ export default class BaseCrawler {
 			if(isNaN(parsedOdd)) throw 'odd patter was unrecognized & could not convert to number'
 
 			return parsedOdd
+		}
+
+		//checks for any errors and throws them if it finds any
+		checkForErrors = (rawMarketData: RawMarketData): string | null => {
+
+			if (rawMarketData.error) return rawMarketData.error
+      if (!rawMarketData.sportName) return 'No raw sport name was found'   	
+      if (!rawMarketData.date) return 'No raw date info was found'        	
+      if (!rawMarketData.eventName) return 'No raw event name was found'   	
+      if (!rawMarketData.team1 || !rawMarketData.team2) return 'No team data was found'
+      if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
+			if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
+			
+			return null
 		}
 
     //makes a http request and returns the entire dom

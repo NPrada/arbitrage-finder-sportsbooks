@@ -1,34 +1,37 @@
 import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, { EventData } from './baseCrawler';
-import {parseHrtimeToSeconds} from './resources/helpers'
+import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
+import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
 
 type extraDataType = {date: string}
-
+//TODO 
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
-  run = async ():Promise<Array<EventData>> => {
+  run = async ():Promise<Array<ParsedMarketData>> => {
     try{
       const startTime = process.hrtime()
 
       const baseUrlDom = await this.fetchHtml(`${this.baseURL}/esports`);
-      const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
-      
+			const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
+
+			//just wait random time before fetching the next page to thow off that we are a bot
+			await this.sleep(getRandomArbitrary(0.5,6)*1000) 
+			
       let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
   
       const $ = cheerio.load(allDom);
       const allDayTables = $('ul.table-group', '#page-content').find('li')
   
-      const matchDataList: Array<EventData> = []
+      const matchDataList: Array<ParsedMarketData> = []
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
   
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
-      return matchDataList;
+			return matchDataList;
     }catch(err){
       console.log('BLOCKING ERROR')
       console.log(err)
@@ -45,9 +48,13 @@ class SkyBetCrawler extends BaseCrawler {
     
     const marketsListPath = $('span:contains("Accumulators")', '#page-content')
       .closest('li') 									//goes back up to the whole accordion container
-      .find('tbody > tr').filter((index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
-        const regex = /(?<!.)(all\s+matches\s+by\s+day)(?!.)/g
-        return regex.test($(elem).find("b").text().trim().toLowerCase())
+      .find('tbody > tr').filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
+				return ($(elem).find("b").text()
+									.trim()
+									.toLowerCase()
+									.split(' ')
+									.join('')
+									.indexOf("allmatchesbyday") !== -1)
       })
       .find("[data-analytics='[Coupons]']")
       .attr('href')
@@ -58,14 +65,14 @@ class SkyBetCrawler extends BaseCrawler {
     return marketsListPath
   }
 
-  getMatchDataFromDayTable = (tableHtml: string | null): Array<EventData> => {
+  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedMarketData> => {
 
     if (isNil(tableHtml) || tableHtml === '')
       throw Error('getMatchDataFromDayTable got no table html to work with')
 
     const $ = cheerio.load(tableHtml);
 
-    const data: Array<EventData> = []
+    const data: Array<ParsedMarketData> = []
     let rowElem: Cheerio
     let currHeaderText: string = ''
 
@@ -115,36 +122,36 @@ class SkyBetCrawler extends BaseCrawler {
     return data;
     }
   
-  parseRawData = (rawRowData: EventData, extraData: extraDataType): EventData | null => {
+  parseRawData = (rawRowData: RawMarketData, extraData: extraDataType): ParsedMarketData | null => {
     try{
-      if (!rawRowData.sportName) throw 'No raw sport name was found'   	
-      if (!rawRowData.date) throw 'No raw date info was found'        	
-      if (!rawRowData.eventName) throw 'No raw event name was found'   	
-      if (!rawRowData.team1 || !rawRowData.team2) throw 'No team data was found'
-      if (!rawRowData.team1.name || !rawRowData.team2.name) throw 'No raw team name was found'
-      if (!rawRowData.team1.odds || !rawRowData.team2.odds) throw 'No raw team odds were found'
-      if (rawRowData.error) throw rawRowData.error
 
-      const team1regx = /.+(?=\sv\s)/g;							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-      const team2regx = /(?<=v ).+(?=(\s\())/g; 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-      const sportNameRegx = /.+(?=\s*[\-\–\—]\s*.*\s*[\-\–\—])/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+			//look for any erros in the raw data and throw them if you find any
+			const rawDataError = this.checkForErrors(rawRowData)
+			if(rawDataError !== null){
+				throw rawDataError
+			}
+      
+      const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+      const team2regx = /((?<=v\s\d\s)).+(?=(\s\())|((?<=\sv\s)).+(?=(\s\())/g 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+      const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const cleanDateRegex = /([A-Z]\w+(?=\s\d+(th|st|nd|rd)))|(?<=\d+)(th|st|nd|rd)/g //eg: matches 'Sunday' and 'th' on: 'Saturday 16th March 2019 22:00' 
       
     
       let rawDateString = `${extraData.date} ${this.getRegexSubstr(rawRowData.date, timeRegex)}` //puts all the info in a string
-      rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
-      let parsedDate:any
-      if(date.isValid(rawDateString, 'D MMMM YYYY HH:mm')){
-        parsedDate = date.parse(rawDateString, 'D MMMM YYYY HH:mm') //parses the string into a date object
-      } else {
-        throw 'could not parse the date strig we got'
-      }
-      
+			rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
+			
+			let formattedDate: string
+			if(date.isValid(rawDateString, 'D MMMM YYYY HH:mm')){
+				const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm')
+				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
+			} else throw 'Problem parsing the date'
+		
+			
       return {
-        ...rawRowData,
-        date: date.format(parsedDate,'YYYY-MM-DD HH:mm'),
+				sportbookId: rawRowData.sportbookId,
+        date: formattedDate,
         eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
         sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
 				team1: {

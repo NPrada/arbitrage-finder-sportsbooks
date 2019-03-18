@@ -28,3 +28,11 @@
 // inoinstarcraft2
 // iuon9onoiunsc2
 // oiuhasodhasodsc
+
+
+
+
+// sportname /.+(?=\s*[\-\–\—]\s*.*\s*[\-\–\—])/g
+// eventname /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 
+//pass
+//R6 - Magyar Nemzeti E-sport Bajnoksag – 15:00
