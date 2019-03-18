@@ -2,6 +2,7 @@ import {SportBookIds, ParsedMarketData} from './crawlers/baseCrawler';
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import { type } from 'os';
+import { join } from 'path';
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedMarketData>;
@@ -124,8 +125,8 @@ ${findingsString}`
 		//TODO check for the team name in the substring
 		//TODO check to see if the acronim == the first letters of  the other name
 		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
-		if (match1.team1.name.toLowerCase() === match2.team1.name.toLowerCase() ||
-				match1.team2.name.toLowerCase() === match2.team2.name.toLowerCase()){
+		if (this.isTeamNameMatching(match1.team1.name, match2.team1.name) ||
+				this.isTeamNameMatching(match1.team2.name, match2.team2.name)){
 					if(match1.date === match2.date){
 						if (match1.sportName === match2.sportName)
 							console.log('------------true ------------')
@@ -137,5 +138,20 @@ ${findingsString}`
         //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
          
     return false
-  }
+	}
+	
+	isTeamNameMatching(name1:string,name2:string){
+		const whiteSpaceRegex = /\s/g
+		const wordsFirstLetterRegex  = /\b(\w)/g //gets the first letter of each word 
+		
+		const name1Acronym = name1.match(wordsFirstLetterRegex).join('').toUpperCase()
+		const name2Acronym = name2.match(wordsFirstLetterRegex).join('').toUpperCase()
+		
+		if(name1.toLowerCase().replace(whiteSpaceRegex,'') === name2.toLowerCase().replace(whiteSpaceRegex,'') ){
+			return true 
+		}
+		else if (name1Acronym === name2.toUpperCase() || name1.toUpperCase() === name2Acronym ){ //tries to match an acronym
+			return true
+		}
+	}
 }
