@@ -11,6 +11,16 @@ export const logHtml = (html: string | null | undefined) => {
   });
 }
 
+export const logJson = (html: string | null | undefined, fileName:string) => {
+ 
+  fs.writeFile(fileName+'.json', html, function (err) {
+    if (err) {
+      return console.log(err);
+    }
+
+  });
+}
+
 //converts the hrtime into seconds 
 export function parseHrtimeToSeconds(hrtime: Array<number>) {
     var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
