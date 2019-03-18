@@ -3,6 +3,7 @@ import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
 import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
+import { raw } from 'body-parser';
 
 type extraDataType = {date: string}
 //TODO 
@@ -17,7 +18,7 @@ class SkyBetCrawler extends BaseCrawler {
 			const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
 
 			//just wait random time before fetching the next page to thow off that we are a bot
-			await this.sleep(getRandomArbitrary(0.5,6)*1000) 
+			await this.sleep(getRandomArbitrary(3,15)*1000)  //waits between 3-15s
 			
       let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
   
@@ -118,7 +119,7 @@ class SkyBetCrawler extends BaseCrawler {
         
         if(parsedRowData !== null) data.push(parsedRowData)
       }
-      }
+    }
     return data;
     }
   
@@ -131,24 +132,26 @@ class SkyBetCrawler extends BaseCrawler {
 				throw rawDataError
 			}
       
-      const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g							//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
-      const team2regx = /((?<=v\s\d\s)).+(?=(\s\())|((?<=\sv\s)).+(?=(\s\())/g 		//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+      const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g			//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
+      const team2regx = /.+(?=(\s\())/g 		        //gets it from eg: 'Pixel Esports Club (Bo1)'
+      const removeTeam1andVS = /(^.+?((\s\d\sv\s\d)|(\sv\s)))/g  //used to remove first part of regexm mathes eg: 'Infinity eSports v' on 'Infinity eSports v Pixel Esports Club (Bo1)'
       const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const cleanDateRegex = /([A-Z]\w+(?=\s\d+(th|st|nd|rd)))|(?<=\d+)(th|st|nd|rd)/g //eg: matches 'Sunday' and 'th' on: 'Saturday 16th March 2019 22:00' 
       
-    
+      //remove the first part of the regex, it makes it easier to match the relevant section
+      rawRowData.team2.name = rawRowData.team2.name.replace(this.getRegexSubstr(rawRowData.team1.name, removeTeam1andVS),'') 
+      
+      //does the parsing ad formattting of the date
       let rawDateString = `${extraData.date} ${this.getRegexSubstr(rawRowData.date, timeRegex)}` //puts all the info in a string
 			rawDateString = rawDateString.replace(cleanDateRegex, '').trim()      //removes the day name and the 'th','nd' etc.. from the string
-			
 			let formattedDate: string
 			if(date.isValid(rawDateString, 'D MMMM YYYY HH:mm')){
 				const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
 			} else throw 'Problem parsing the date'
-		
-			
+      
       return {
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
