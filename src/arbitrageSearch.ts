@@ -121,7 +121,9 @@ ${findingsString}`
 		if(match1.sportName === match2.sportName){
 			debugger
 		}
-			
+		//TODO check for the team name in the substring
+		//TODO check to see if the acronim == the first letters of  the other name
+		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
 		if (match1.team1.name.toLowerCase() === match2.team1.name.toLowerCase() ||
 				match1.team2.name.toLowerCase() === match2.team2.name.toLowerCase()){
 					if(match1.date === match2.date){
