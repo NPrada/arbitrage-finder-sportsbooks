@@ -1,7 +1,7 @@
 import {SportBookIds, ParsedMarketData} from './crawlers/baseCrawler';
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
-import { type } from 'os';
+import {logJson} from './crawlers/resources/helpers'
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedMarketData>;
@@ -34,14 +34,33 @@ export default class ArbSearch {
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
     const matchesFound: Array<{market1: ParsedMarketData, market2: ParsedMarketData}> = []
 		
-    this.allGamesCrawled[sportbookIds[0]].map( market1 => {
-      this.allGamesCrawled[sportbookIds[1]].map( market2 => {
+		const debugJson1:any = this.allGamesCrawled[sportbookIds[0]]
+		const debugJson2:any = this.allGamesCrawled[sportbookIds[1]]
+
+    this.allGamesCrawled[sportbookIds[0]].map( (market1,index1) => {
+      this.allGamesCrawled[sportbookIds[1]].map( (market2,index2) => {
+
 				
+
 				if(this.isMatching(market1,market2)){
+					console.log('hellooo', index1, index2)
 					matchesFound.push({market1,market2})
+					debugJson1[index1].matched = true
+					debugJson2[index2].matched = true
+				}else{
+					if(debugJson1[index1].matched !== true){
+						debugJson1[index1].matched = false
+					}
+					
+					if(debugJson2[index2].matched !== true){
+						debugJson2[index2].matched = false
+					}
 				}
     })});
 		
+		logJson(JSON.stringify(debugJson1, undefined, 2), 'skybet')
+		logJson(JSON.stringify(debugJson2, undefined, 2), 'egb')
+
 		let profitMargins: Array<{market1: ParsedMarketData, market2: ParsedMarketData, profitInfo:BetStats }> = []
 		matchesFound.map( (match:{market1:ParsedMarketData, market2: ParsedMarketData}) => { 
 			const team1Max = Math.max(match.market1.team1.odds, match.market2.team1.odds)
@@ -126,7 +145,6 @@ ${findingsString}`
 				match1.team2.name.toLowerCase() === match2.team2.name.toLowerCase()){
 					if(match1.date === match2.date){
 						if (match1.sportName === match2.sportName)
-							console.log('------------true ------------')
 							return true
 					} 
 				
