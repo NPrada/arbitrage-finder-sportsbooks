@@ -18,7 +18,7 @@ class SkyBetCrawler extends BaseCrawler {
 			const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
 
 			//just wait random time before fetching the next page to thow off that we are a bot
-			await this.sleep(getRandomArbitrary(0.5,6)*1000) 
+			await this.sleep(getRandomArbitrary(3,15)*1000)  //waits between 3-15s
 			
       let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
   

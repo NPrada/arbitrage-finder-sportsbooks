@@ -1,4 +1,5 @@
 import {SportBookIds, ParsedMarketData} from './crawlers/baseCrawler';
+import date from 'date-and-time'
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import { type } from 'os';
@@ -106,9 +107,12 @@ export default class ArbSearch {
 		})
 		
 		if(smallerResList === null) smallerResList = 0
+		let now = new Date();
+		date.format(now, 'YYYY/MM/DD HH:mm:ss');	
 
 		const matchPercentage = Math.round((matchesFound.length / smallerResList)*10000)/100
-		return `Out of ${smallerResList} games on ${smallerSportsbook} we found ${matchesFound.length} matches ~${matchPercentage}%.
+		return `Ran the crawl task at ${date.format(now, 'YYYY/MM/DD HH:mm:ss')}
+Out of ${smallerResList} games on ${smallerSportsbook} we found ${matchesFound.length} matches ~${matchPercentage}%.
 ${countProfitable} were profitable arbitrages.
 ${findingsString}`
 	}
