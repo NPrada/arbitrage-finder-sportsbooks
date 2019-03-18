@@ -8,12 +8,11 @@
 
 
 // import runSkyBetCrawler from './crawlers/skybetCrawler'
-import {ParsedMarketData} from './crawlers/baseCrawler'
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
 import ArbSearch from './arbitrageSearch'
 import {exampleCrawlerResponse} from './crawlers/resources/crawlResponse'
-import nodemailer from 'nodemailer'
+
 import sendMail from './emailer'
 import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
@@ -22,7 +21,7 @@ const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
 
 const crawlerTask = async () => {
-
+	console.log('Starting crawl task....')
   const skyResults = skyBetCrawler.run()
 	const egbResults = egbCrawler.run()
 
@@ -30,11 +29,13 @@ const crawlerTask = async () => {
  	const allResults = [await skyResults, await egbResults]; 
 	
 	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
-	const arbFinder = new ArbSearch(exampleCrawlerResponse)
+	const arbFinder = new ArbSearch(fullCrawlObject)
 	const findingsReport = arbFinder.search()
 
-	sendMail('Arbitrage Findings Report',findingsReport)
-
+	await sendMail('Arbitrage Findings Report',findingsReport)
+	console.log('Finishing crawl task....')
 }
 
 crawlerTask()
+
+export default crawlerTask
