@@ -23,18 +23,18 @@ const skyBetCrawler = new SkyBetCrawler('skybet')
 
 const crawlerTask = async () => {
 
-  // const skyResults = skyBetCrawler.run()
-	// const egbResults = egbCrawler.run()
+  const skyResults = skyBetCrawler.run()
+	const egbResults = egbCrawler.run()
 
 	//waits for both functions to finish before continuing
- 	// const allResults = [await skyResults, await egbResults]; 
-	// // console.log('?')
-	// const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
-	const arbFinder = new ArbSearch(exampleCrawlerResponse)
-	// const findingsReport = arbFinder.search()
+ 	const allResults = [await skyResults, await egbResults]; 
 	
-	// sendMail('Arbitrage Findings Report',findingsReport)
-	arbFinder.isTeamNameMatching('NIP','Ninjas in Pijamas')
+	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
+	const arbFinder = new ArbSearch(exampleCrawlerResponse)
+	const findingsReport = arbFinder.search()
+
+	sendMail('Arbitrage Findings Report',findingsReport)
+
 }
 
 crawlerTask()

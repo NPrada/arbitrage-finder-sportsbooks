@@ -129,7 +129,6 @@ ${findingsString}`
 				this.isTeamNameMatching(match1.team2.name, match2.team2.name)){
 					if(match1.date === match2.date){
 						if (match1.sportName === match2.sportName)
-							console.log('------------true ------------')
 							return true
 					} 
 				

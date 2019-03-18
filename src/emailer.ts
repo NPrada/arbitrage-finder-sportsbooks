@@ -12,7 +12,7 @@ const sendMail = (subject: string, text: string) => {
 	})
 
 	//get mail recipients from the env variables, they are separated by ' '
-	const mailList = process.env.EMAIL_RECIPIENTS.split(' ')
+	const mailList = process.env.EMAIL_RECIPIENTS .split(' ') 
 
 	const mailOptions = {
 		priority: 'high',
