@@ -2,8 +2,6 @@ import {SportBookIds, ParsedMarketData} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
-import { type } from 'os';
-import { join } from 'path';
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedMarketData>;

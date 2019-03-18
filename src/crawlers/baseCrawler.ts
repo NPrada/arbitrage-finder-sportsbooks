@@ -1,7 +1,6 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
 
-
 type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
 export type SportBookIds = 'skybet' | 'egb'
 
