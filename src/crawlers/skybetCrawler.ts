@@ -3,7 +3,7 @@ import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
 import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
-import { raw } from 'body-parser';
+
 
 type extraDataType = {date: string}
 //TODO 

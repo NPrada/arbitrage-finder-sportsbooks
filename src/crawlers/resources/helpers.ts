@@ -13,7 +13,7 @@ export const logHtml = (html: string | null | undefined) => {
 
 export const logJson = (html: string | null | undefined, fileName:string) => {
  
-  fs.writeFile(fileName+'.json', html, function (err) {
+  fs.writeFile('./logfiles/'+fileName+'.json', html, function (err) {
     if (err) {
       return console.log(err);
     }
