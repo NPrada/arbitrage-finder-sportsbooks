@@ -152,5 +152,25 @@ ${findingsString}`
 		else if (name1Acronym === name2.toUpperCase() || name1.toUpperCase() === name2Acronym ){ //tries to match an acronym
 			return true
 		}
+
+		//checks if any of the words are present in the other string
+		function matchWord (name1:string, name2:string):boolean { //TODO user tests
+			const splitRegex  = /\s|-|./g //splits the string by spaces, "-" , "."
+			
+			const splitName1 = name1.split(splitRegex)
+			const splitName2 = name2.split(splitRegex)
+			
+			let res: boolean
+
+			splitName1.find((elem:string) => {
+				return elem === name2
+			})
+
+			splitName2.find((elem:string) => {
+				return elem === name1
+			})
+
+			return true
+		}
 	}
 }
