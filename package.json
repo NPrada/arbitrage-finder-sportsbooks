@@ -4,11 +4,11 @@
   "description": "find profitable arbitrages",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && echo typescript compiled successfully..  && node dist/index.js",
-    "build:inspect": "tsc && echo typescript compiled successfully..  && node --inspect dist/index.js",
-    "server": "tsc && echo typescript compiled successfully.. && node dist/server/server.js",
-    "compile": "tsc && echo typescript compiled successfully.."
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"compile": "tsc && echo typescript compiled successfully.. && cp package.json dist && cp package-lock.json dist && cp README.md dist && cp .env dist ",
+		"build": "npm run compile  && node dist/src/index.js",
+    "cron": "npm run compile &&  node dist/src/cron.js && echo cron scheduler started..",
+    "server": "npm run compile && node dist/src/server/server.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   "author": "NP",
   "license": "ISC",
   "dependencies": {
+    "@types/node-cron": "^2.0.1",
     "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
     "date-and-time": "^0.6.3",
@@ -25,6 +26,7 @@
     "lodash": "^4.17.11",
     "mongoose": "^5.4.19",
     "morgan": "^1.9.1",
+    "node-cron": "^2.0.3",
     "nodemailer": "^5.1.1",
     "puppeteer": "^1.13.0",
     "request": "^2.88.0",
