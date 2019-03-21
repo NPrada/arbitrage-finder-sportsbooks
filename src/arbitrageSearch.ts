@@ -143,29 +143,38 @@ ${findingsString}`
 	}
 	
 	isTeamNameMatching(name1:string,name2:string){
-		const whiteSpaceRegex = /\s/g
-		const wordsFirstLetterRegex  = /\b(\w)/g //gets the first letter of each word 
-		
-		const name1Acronym = name1.match(wordsFirstLetterRegex).join('').toUpperCase()
-		const name2Acronym = name2.match(wordsFirstLetterRegex).join('').toUpperCase()
-		
-		if(name1.toLowerCase().replace(whiteSpaceRegex,'') === name2.toLowerCase().replace(whiteSpaceRegex,'') ){
+
+		if (mathcFullString(name1,name2))
 			return true 
-		}
-		else if (name1Acronym === name2.toUpperCase() || name1.toUpperCase() === name2Acronym ){ //tries to match an acronym
+		else if (matchAcronym(name1,name2))	//tries to match an acronym
 			return true
-		} else if(matchSingleWord (name1.toUpperCase(), name2.toUpperCase())){
+		else if (matchSingleWord (name1, name2))
 			return true
-		}else{
+		else
 			return false
+		
+		//simply checcks if the two string are the same
+		function mathcFullString(name1:string,name2:string):boolean{
+			const whiteSpaceRegex = /\s/g
+			return name1.toLowerCase().replace(whiteSpaceRegex,'') === name2.toLowerCase().replace(whiteSpaceRegex,'')
+		}
+
+		//creates an acronym for each work and sees if it matches the other unchanged string
+		function matchAcronym (name1: string, name2:string):boolean{
+
+			const wordsFirstLetterRegex  = /\b(\w)/g //gets the first letter of each word 
+			const name1Acronym = name1.match(wordsFirstLetterRegex).join('').toUpperCase()
+			const name2Acronym = name2.match(wordsFirstLetterRegex).join('').toUpperCase()
+
+			return name1Acronym === name2.toUpperCase() || name1.toUpperCase() === name2Acronym 
 		}
 
 		//checks if any of the words are present in the other string
 		function matchSingleWord (name1:string, name2:string):boolean { //TODO user tests
 			const splitRegex  = /\s|-|./g //splits the string by spaces, "-" , "."
 			
-			const splitName1: Array<string> = name1.split(splitRegex)
-			const splitName2: Array<string> = name2.split(splitRegex)
+			const splitName1: Array<string> = name1.toLowerCase().split(splitRegex)
+			const splitName2: Array<string> = name2.toLowerCase().split(splitRegex)
 
 			const filteredName1: Array<string> = splitName1.filter(word => word.length > 3); //removes any words that are shorter than 3 char
 			const filteredName2: Array<string> = splitName2.filter(word => word.length > 3);
