@@ -2,8 +2,7 @@ import {SportBookIds, ParsedMarketData} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
-import { type } from 'os';
-import { join } from 'path';
+import includes from 'lodash/includes'
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedMarketData>;
@@ -155,26 +154,23 @@ ${findingsString}`
 		}
 		else if (name1Acronym === name2.toUpperCase() || name1.toUpperCase() === name2Acronym ){ //tries to match an acronym
 			return true
+		} else if(matchSingleWord (name1.toUpperCase(), name2.toUpperCase())){
+			return true
+		}else{
+			return false
 		}
 
 		//checks if any of the words are present in the other string
-		function matchWord (name1:string, name2:string):boolean { //TODO user tests
+		function matchSingleWord (name1:string, name2:string):boolean { //TODO user tests
 			const splitRegex  = /\s|-|./g //splits the string by spaces, "-" , "."
 			
-			const splitName1 = name1.split(splitRegex)
-			const splitName2 = name2.split(splitRegex)
-			
-			let res: boolean
+			const splitName1: Array<string> = name1.split(splitRegex)
+			const splitName2: Array<string> = name2.split(splitRegex)
 
-			splitName1.find((elem:string) => {
-				return elem === name2
-			})
+			const filteredName1: Array<string> = splitName1.filter(word => word.length > 3); //removes any words that are shorter than 3 char
+			const filteredName2: Array<string> = splitName2.filter(word => word.length > 3);
 
-			splitName2.find((elem:string) => {
-				return elem === name1
-			})
-
-			return true
+			return includes(filteredName1, name2) || includes(filteredName2, name1)
 		}
 	}
 }
