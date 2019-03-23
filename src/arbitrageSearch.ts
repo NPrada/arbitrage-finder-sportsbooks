@@ -35,6 +35,8 @@ export default class ArbSearch {
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
     const matchesFound: Array<{market1: ParsedMarketData, market2: ParsedMarketData}> = []
 		
+
+		//this is the section of code that looks for bets that match up on two sportbooks
     this.allGamesCrawled[sportbookIds[0]].map( market1 => {
       this.allGamesCrawled[sportbookIds[1]].map( market2 => {
 				

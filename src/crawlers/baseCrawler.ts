@@ -17,6 +17,25 @@ export interface RawMarketData {
     error?: string | null
 }
 
+//TODO use this schema instead
+// export interface ParsedMarketData { 
+// 	sportbookId: string
+// 	eventName: string
+// 	sportName: string 		
+// 	date: string 
+// 	team1: {  
+// 		name: string,
+// 		bets: Array<{ betName: string , odds: number}>,		
+// 	}
+// 	team2: {
+// 		name: string,
+// 		bets: Array<{ betName: string , odds: number}>,		
+// 	}
+// 	matchType?: string 
+// 	pageHref?: string
+// 	error?: string 
+// }
+
 export interface ParsedMarketData {
 	sportbookId: string
 	eventName: string
