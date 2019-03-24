@@ -37,6 +37,7 @@ export interface RawMarketData {
 // }
 
 export interface ParsedMarketData {
+	id: string
 	sportbookId: string
 	eventName: string
 	sportName: string 

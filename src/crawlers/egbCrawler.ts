@@ -4,6 +4,7 @@ import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, {RawMarketData, ParsedMarketData} from './baseCrawler';
 import { parseHrtimeToSeconds, logHtml } from './resources/helpers'
+import uniqid from 'uniqid'
 
 //TODO this needs to be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
@@ -110,6 +111,7 @@ class EGBCrawler extends BaseCrawler {
       
 
       return {
+				id: uniqid(),
 				sportbookId: rawRowData.sportbookId,
 				eventName: rawRowData.eventName,
         sportName: this.standardiseSportName(rawRowData.sportName),

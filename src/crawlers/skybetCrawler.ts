@@ -3,7 +3,7 @@ import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
 import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
-import { raw } from 'body-parser';
+import uniqid from 'uniqid'
 
 type extraDataType = {date: string}
 //TODO 
@@ -153,6 +153,7 @@ class SkyBetCrawler extends BaseCrawler {
 			} else throw 'Problem parsing the date'
       
       return {
+				id: uniqid(),
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
         eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
