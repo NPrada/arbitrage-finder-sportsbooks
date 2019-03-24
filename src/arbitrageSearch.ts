@@ -1,16 +1,16 @@
-import {SportBookIds, ParsedMarketData} from './crawlers/baseCrawler';
+import {SportBookIds, ParsedGameData} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import includes from 'lodash/includes'
 
 export type FullMatchData = {
-  [key in SportBookIds]: Array<ParsedMarketData>;
+  [key in SportBookIds]: Array<ParsedGameData>;
 }; 
 
 type GamesMatchData = {
-	market1: ParsedMarketData,
-	market2: ParsedMarketData
+	market1: ParsedGameData,
+	market2: ParsedGameData
 }
 
 type BetStats = {
@@ -33,7 +33,7 @@ export default class ArbSearch {
   search = () => {
     
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
-    const matchesFound: Array<{market1: ParsedMarketData, market2: ParsedMarketData}> = []
+    const matchesFound: Array<{market1: ParsedGameData, market2: ParsedGameData}> = []
 		
 
 		//this is the section of code that looks for bets that match up on two sportbooks
@@ -45,8 +45,8 @@ export default class ArbSearch {
 				}
     })});
 		
-		let profitMargins: Array<{market1: ParsedMarketData, market2: ParsedMarketData, profitInfo:BetStats }> = []
-		matchesFound.map( (match:{market1:ParsedMarketData, market2: ParsedMarketData}) => { 
+		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
+		matchesFound.map( (match:{market1:ParsedGameData, market2: ParsedGameData}) => { 
 			const team1Max = Math.max(match.market1.team1.odds, match.market2.team1.odds)
 			const team2Max = Math.max(match.market1.team2.odds, match.market2.team2.odds)
 			
@@ -79,7 +79,7 @@ export default class ArbSearch {
 		}
 	}
 
-	buildResultsReport = (matchesFound:Array<{market1: ParsedMarketData, market2: ParsedMarketData, profitInfo:BetStats }>): string => {
+	buildResultsReport = (matchesFound:Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }>): string => {
 
 		let smallerResList: number | null= null;
 		let smallerSportsbook: SportBookIds | null = null;
@@ -118,7 +118,7 @@ ${countProfitable} were profitable arbitrages.
 ${findingsString}`
 	}
 	
-  isMatching = (match1:ParsedMarketData, match2:ParsedMarketData):boolean => {
+  isMatching = (match1:ParsedGameData, match2:ParsedGameData):boolean => {
     if (isNil(match1.eventName) || isNil(match2.eventName))
       return false
     if (isNil(match1.team1.name) || isNil(match2.team1.name) || isNil(match1.team2.name) || isNil(match2.team2.name))

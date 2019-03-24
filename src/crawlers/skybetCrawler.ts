@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
+import BaseCrawler, { RawGameData ,ParsedGameData } from './baseCrawler';
 import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
 import uniqid from 'uniqid'
 
@@ -10,7 +10,7 @@ type extraDataType = {date: string}
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
-  run = async ():Promise<Array<ParsedMarketData>> => {
+  run = async ():Promise<Array<ParsedGameData>> => {
     try{
       const startTime = process.hrtime()
 
@@ -25,7 +25,7 @@ class SkyBetCrawler extends BaseCrawler {
       const $ = cheerio.load(allDom);
       const allDayTables = $('ul.table-group', '#page-content').find('li')
   
-      const matchDataList: Array<ParsedMarketData> = []
+      const matchDataList: Array<ParsedGameData> = []
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
@@ -66,14 +66,14 @@ class SkyBetCrawler extends BaseCrawler {
     return marketsListPath
   }
 
-  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedMarketData> => {
+  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedGameData> => {
 
     if (isNil(tableHtml) || tableHtml === '')
       throw Error('getMatchDataFromDayTable got no table html to work with')
 
     const $ = cheerio.load(tableHtml);
 
-    const data: Array<ParsedMarketData> = []
+    const data: Array<ParsedGameData> = []
     let rowElem: Cheerio
     let currHeaderText: string = ''
 
@@ -123,7 +123,7 @@ class SkyBetCrawler extends BaseCrawler {
     return data;
     }
   
-  parseRawData = (rawRowData: RawMarketData, extraData: extraDataType): ParsedMarketData | null => {
+  parseRawData = (rawRowData: RawGameData, extraData: extraDataType): ParsedGameData | null => {
     try{
 
 			//look for any erros in the raw data and throw them if you find any
@@ -153,10 +153,10 @@ class SkyBetCrawler extends BaseCrawler {
 			} else throw 'Problem parsing the date'
       
       return {
-				id: uniqid(),
+				uuid: uniqid(),
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
-        eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
+        competitionName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
         sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
 				team1: {
 					name: this.getRegexSubstr(rawRowData.team1.name, team1regx), 

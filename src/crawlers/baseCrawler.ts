@@ -1,53 +1,65 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
 
-
-type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
+export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
+export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb'
 
-export interface RawMarketData {
-    sportbookId: string
-    eventName: string | null
-    sportName: string | null
-    date: string | null
-    team1: { name: string | null, odds: string | null | number} 
-    team2: { name: string | null, odds: string | null | number}
-    matchType?: string | null
-    pageHref?: string | null
-    error?: string | null
+export interface RawGameData {
+	sportbookId: SportBookIds
+	competitionName: string | null
+	sportName: string | null
+	date: string | null
+	team1Name: string | null
+	team2Name: string | null
+	markets: {
+		[marketName in MarketNames]: {
+			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string | null}>
+		} | null
+	} | null
+	matchType?: string | null
+	pageHref?: string | null
+	error?: string | null
 }
 
-//TODO use this schema instead
-// export interface ParsedMarketData { 
-// 	sportbookId: string
-// 	eventName: string
-// 	sportName: string 		
-// 	date: string 
-// 	team1: {  
-// 		name: string,
-// 		bets: Array<{ betName: string , odds: number}>,		
-// 	}
-// 	team2: {
-// 		name: string,
-// 		bets: Array<{ betName: string , odds: number}>,		
-// 	}
-// 	matchType?: string 
-// 	pageHref?: string
-// 	error?: string 
-// }
 
-export interface ParsedMarketData {
-	id: string
-	sportbookId: string
-	eventName: string
-	sportName: string 
+// TODO use this schema instead
+export interface ParsedGameData { 
+	uuid: string
+	sportbookId: SportBookIds,
+	competitionName: string
+	sportName: string 		
 	date: string 
-	team1: { name: string , odds: number}
-	team2: { name: string , odds: number}
+	team1Name: string
+	team2Name: string
+	markets: {
+		[marketName in MarketNames]: {
+			bets: Array<{teamKey: 0|1|2, betName: string, odds: number}>
+		}
+	}
 	matchType?: string 
 	pageHref?: string
 	error?: string 
 }
+
+// const exampleParsedMarketData:ParsedMarketData = { 
+// 	uuid: '123',
+// 	sportbookId: 'skybet',
+// 	competitionName: 'katovice',
+// 	sportName: 'csgo',	
+// 	date: '1/2/1992' ,
+// 	team1Name: 'Nip',
+// 	team2Name: 'Fnatic',
+// 	markets: {
+// 		outright: {
+// 			bets: [
+// 				{ teamKey: 1, betName: 'win', odds: 1.2},
+// 				{ teamKey: 2, betName: 'win', odds: 1.4},
+// 				{ teamKey: 0, betName: 'draw',odds: 1.4}
+// 			]
+// 		}
+// 	}
+// }
 
 export default class BaseCrawler {
 
@@ -58,15 +70,16 @@ export default class BaseCrawler {
 
 		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promise so we can just use await
     
-    initializeEventData = (): RawMarketData => {
-        return {
-            sportbookId: this.sportBookId,
-            eventName: null,
-            sportName: null,
-            date: null,
-            team1: { name: null, odds: null },
-            team2: { name: null, odds: null }
-        }
+    initializeEventData = (): RawGameData => {
+			return {
+				sportbookId: this.sportBookId,
+				competitionName: null,
+				sportName: null,
+				date: null,
+				team1Name: null,
+				team2Name: null,
+				markets: null
+			}
     }
     
     standardiseSportName = (rawSportName: string):SportName => {
@@ -105,7 +118,7 @@ export default class BaseCrawler {
 			return UAs[Math.floor(Math.random() * UAs.length)]
     }
 
-		formatOdds = (rawOdd: any):number => {
+		formatOdds = (rawOdd: any):number => { //add a lot
 			if(rawOdd === '' )
 				throw 'odd patter was unrecognized'
 
@@ -118,18 +131,18 @@ export default class BaseCrawler {
 				parsedOdd = Number(rawOdd)
 			}
 			
-			if(isNaN(parsedOdd)) throw 'odd patter was unrecognized & could not convert to number'
+			if(isNaN(parsedOdd)) throw 'odd pattern was unrecognized & could not convert to number'
 
 			return parsedOdd
 		}
 
 		//checks for any errors and throws them if it finds any
-		checkForErrors = (rawMarketData: RawMarketData): string | null => {
+		checkForErrors = (rawMarketData: RawGameData): string | null => {
 
 			if (rawMarketData.error) return rawMarketData.error
       if (!rawMarketData.sportName) return 'No raw sport name was found'   	
       if (!rawMarketData.date) return 'No raw date info was found'        	
-      if (!rawMarketData.eventName) return 'No raw event name was found'   	
+      if (!rawMarketData.competitionName) return 'No raw event name was found'   	
       if (!rawMarketData.team1 || !rawMarketData.team2) return 'No team data was found'
       if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
 			if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
@@ -151,6 +164,7 @@ export default class BaseCrawler {
         })
         return allDom
     }
+
 
     //applies a regex to a string and throws an error if it fails in some way
     getRegexSubstr = (string: string, regex: RegExp):string => {
