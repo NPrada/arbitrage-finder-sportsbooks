@@ -120,7 +120,7 @@ class EGBCrawler extends BaseCrawler {
 				team2: {name: rawRowData.team2.name, odds: rawRowData.team2.odds}
       }
     }catch(e){
-      console.log(e)
+      console.log('(egb) Non Blocking Error: ' + e)
       return null
     }
   }

@@ -96,7 +96,7 @@ export default class BaseCrawler {
 				else if(callofdutyRegex.test(parsedSportName))
 						return 'callofduty'
         else{
-            throw `Error: unknown sportname -> ${parsedSportName}`
+            throw `unknown sportname -> ${parsedSportName}`
         }
     }
     

@@ -167,7 +167,7 @@ class SkyBetCrawler extends BaseCrawler {
       }
     }catch(e){
       
-      console.log('Non Blocking Error:',e)
+      console.log('(sky) Non Blocking Error:',e)
       return null
     }
   }
