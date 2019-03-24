@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import BaseCrawler, {RawMarketData, ParsedMarketData} from './baseCrawler';
-import { parseHrtimeToSeconds } from './resources/helpers'
+import { parseHrtimeToSeconds, logHtml } from './resources/helpers'
 
 //TODO this needs to be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
@@ -17,9 +17,10 @@ class EGBCrawler extends BaseCrawler {
 			const page = await browser.newPage();
       await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
       await page.setUserAgent(this.fakeUA())
-      await page.setViewport({width: 1500, height:1000})
+      await page.setViewport({width: 1500, height:2500})
       
-      await page.waitForSelector("#app")
+			await page.waitForSelector("#app")
+			await page.screenshot({path: 'egb-state1.png'});
 			let allDom = await page.evaluate(() => {
         if(document !== null && document.getElementById("app") !== null) {         
           return document.getElementById("app")!.innerHTML
@@ -45,7 +46,11 @@ class EGBCrawler extends BaseCrawler {
 
 			await browser.close();
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-			if(!matchDataList.length) throw Error('No errors logged but we didnt get any match data at all try restarting')
+			if(!matchDataList.length) {
+				logHtml(allDom)
+				await page.screenshot({path: 'egb-state2.png'});
+				throw Error('No errors logged but we didnt get any match data at all try restarting')
+			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
 			return matchDataList
 		}catch(err){
