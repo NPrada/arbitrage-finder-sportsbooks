@@ -14,7 +14,7 @@ export interface RawGameData {
 	team2Name: string | null
 	markets: {
 		[marketName in MarketNames]: {
-			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string | null}>
+			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
 		} | null
 	} | null
 	matchType?: string | null
@@ -118,7 +118,7 @@ export default class BaseCrawler {
 			return UAs[Math.floor(Math.random() * UAs.length)]
     }
 
-		formatOdds = (rawOdd: any):number => { //add a lot
+		formatOdds = (rawOdd: any):number => { //add a lot of unit tests
 			if(rawOdd === '' )
 				throw 'odd patter was unrecognized'
 

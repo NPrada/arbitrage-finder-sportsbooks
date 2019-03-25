@@ -100,10 +100,7 @@ class EGBCrawler extends BaseCrawler {
 			}
 			
 			//format all the bets odds in the outright market
-			const parsedMarkets = rawRowData.markets
-			
-			
-			parsedMarkets.outright.bets = rawRowData.markets.outright.bets.map(element => {
+			const outrightBets = rawRowData.markets.outright.bets.map(element => {
 				return {
 					teamKey: element.teamKey, 
 					betName: element.betName,
@@ -127,7 +124,9 @@ class EGBCrawler extends BaseCrawler {
 				date: formattedDate,
 				team1Name: rawRowData.team1Name,
 				team2Name: rawRowData.team2Name,
-				markets: parsedMarkets
+				markets: { 
+					outright: {	bets:  outrightBets	}
+				}
       }
     }catch(e){ //logs an error and discards this gameData
       console.log('(egb) Non Blocking Error: ' + e)
