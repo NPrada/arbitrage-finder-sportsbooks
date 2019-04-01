@@ -79,6 +79,8 @@ class EGBCrawler extends BaseCrawler {
     matchData.competitionName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
     matchData.team1Name = tableRow.find('.table-bets__player1 > span').attr('title')
 		matchData.team2Name = tableRow.find('.table-bets__player2 > span').attr('title')
+		console.log(matchData)
+		matchData.markets = { outright:{ bets: []} }
 		matchData.markets.outright.bets = [
 			{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},
 			{teamKey:2, betName: 'win', odds: tableRow.find('.table-bets__col-3').find('.bet-rate').text()}
@@ -100,7 +102,7 @@ class EGBCrawler extends BaseCrawler {
 			}
 			
 			//format all the bets odds in the outright market
-			const outrightBets = rawRowData.markets.outright.bets.map(element => {
+			const outrightBets = rawRowData.markets.outright.bets.map((element: any) => {
 				return {
 					teamKey: element.teamKey, 
 					betName: element.betName,
@@ -125,7 +127,7 @@ class EGBCrawler extends BaseCrawler {
 				team1Name: rawRowData.team1Name,
 				team2Name: rawRowData.team2Name,
 				markets: { 
-					outright: {	bets:  outrightBets	}
+					outright: {	bets:  outrightBets	}  
 				}
       }
     }catch(e){ //logs an error and discards this gameData

@@ -16,7 +16,7 @@ export interface RawGameData {
 		[marketName in MarketNames]: {
 			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
 		} | null
-	} | null
+	} | any
 	matchType?: string | null
 	pageHref?: string | null
 	error?: string | null
@@ -78,7 +78,7 @@ export default class BaseCrawler {
 				date: null,
 				team1Name: null,
 				team2Name: null,
-				markets: null
+				markets: {}
 			}
     }
     
@@ -143,9 +143,10 @@ export default class BaseCrawler {
       if (!rawMarketData.sportName) return 'No raw sport name was found'   	
       if (!rawMarketData.date) return 'No raw date info was found'        	
       if (!rawMarketData.competitionName) return 'No raw event name was found'   	
-      if (!rawMarketData.team1 || !rawMarketData.team2) return 'No team data was found'
-      if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
-			if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
+			if (!rawMarketData.team1Name || !rawMarketData.team2Name) return 'No team name data was found'
+			//TODO add checks for the sigle bets
+      // if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
+			// if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
 			
 			return null
 		}
