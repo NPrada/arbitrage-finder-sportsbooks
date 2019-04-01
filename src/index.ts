@@ -21,9 +21,9 @@ const crawlerTask = async () => {
 	const egbResults = egbCrawler.run()
 
 	//waits for both functions to finish before continuing
- 	const allResults = [ await skyResults]; 
-	//console.log(allResults[1])
-	// const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
+ 	const allResults = [await egbResults, await skyResults]; 
+	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
+	
 	// const arbFinder = new ArbSearch(fullCrawlObject)
 	// const findingsReport = arbFinder.search()
 

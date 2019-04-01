@@ -79,7 +79,6 @@ class EGBCrawler extends BaseCrawler {
     matchData.competitionName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
     matchData.team1Name = tableRow.find('.table-bets__player1 > span').attr('title')
 		matchData.team2Name = tableRow.find('.table-bets__player2 > span').attr('title')
-		console.log(matchData)
 		matchData.markets = { outright:{ bets: []} }
 		matchData.markets.outright.bets = [
 			{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},

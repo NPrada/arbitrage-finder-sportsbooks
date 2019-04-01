@@ -20,7 +20,7 @@ class SkyBetCrawler extends BaseCrawler {
 			//just wait random time before fetching the next page to thow off that we are a bot
 			await this.sleep(getRandomArbitrary(3,15)*1000)  //waits between 3-15s
 			
-      let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
+      let allDom = await this.fetchHtml(`${allMatchesPath}`); //${baseURL}${allMatchesPath}
   
       const $ = cheerio.load(allDom);
       const allDayTables = $('ul.table-group', '#page-content').find('li')
@@ -46,24 +46,21 @@ class SkyBetCrawler extends BaseCrawler {
       throw Error('getAllMatchesByDayPath got no table html to work with')
 
     const $ = cheerio.load(allDom);
-    
-    const marketsListPath = $('span:contains("Accumulators")', '#page-content')
-      .closest('li') 									//goes back up to the whole accordion container
-      .find('tbody > tr').filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
-				return ($(elem).find("b").text()
-									.trim()
-									.toLowerCase()
-									.split(' ')
-									.join('')
-									.indexOf("allmatchesbyday") !== -1)
+    const marketsListPath = $("#coupons", '#page-content')
+			 .find("[data-analytics='[Coupons]']").filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day" so the matching is not case sensitive
+				return ($(elem).find("div").text()
+										.trim()
+										.toLowerCase()
+										.split(' ')
+										.join('')
+										.indexOf("allmatchesbyday") !== -1)
       })
-      .find("[data-analytics='[Coupons]']")
       .attr('href')
 
       
-    if (isNil(marketsListPath)) throw Error('Crawler was unable to get the link to the markets by day page')
+    if (isNil(marketsListPath)) throw Error(`Crawler was unable to get the link to the markets by day page, what it got was null, probably the location of the "All Matches By Day" button has changed`)
   
-    return marketsListPath
+    return this.baseURL + marketsListPath
   }
 
   getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedGameData> => {
@@ -112,10 +109,10 @@ class SkyBetCrawler extends BaseCrawler {
 				rawMatchData.pageHref = this.baseURL + matchHref
 				rawMatchData.team1Name = matchNameString 	// eg:'Infinity eSports v Pixel Esports Club (Bo1)'
 				rawMatchData.team2Name = matchNameString	// eg:'Infinity eSports v Pixel Esports Club (Bo1)'
-				rawMatchData.markets.outright.bets = [
+				rawMatchData.markets = {outright: {bets: [
 					{teamKey: 1, betName: 'win', odds: odds1},
 					{teamKey: 2, betName: 'win', odds: odds2},
-				]
+				]}}
          
         const parsedRowData = this.parseRawData(rawMatchData, {date: date})
         
