@@ -47,17 +47,15 @@ class SkyBetCrawler extends BaseCrawler {
 
     const $ = cheerio.load(allDom);
     
-    const marketsListPath = $('span:contains("Accumulators")', '#page-content')
-      .closest('li') 									//goes back up to the whole accordion container
-      .find('tbody > tr').filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day"
-				return ($(elem).find("b").text()
-									.trim()
-									.toLowerCase()
-									.split(' ')
-									.join('')
-									.indexOf("allmatchesbyday") !== -1)
+    const marketsListPath = $("#coupons", '#page-content')
+			 .find("[data-analytics='[Coupons]']").filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day" so the matching is not case sensitive
+				return ($(elem).find("div").text()
+										.trim()
+										.toLowerCase()
+										.split(' ')
+										.join('')
+										.indexOf("allmatchesbyday") !== -1)
       })
-      .find("[data-analytics='[Coupons]']")
       .attr('href')
 
       
