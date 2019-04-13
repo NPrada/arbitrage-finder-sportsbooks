@@ -1,8 +1,9 @@
 import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
+import random from 'lodash/random'
 import BaseCrawler, { RawGameData ,ParsedGameData } from './baseCrawler';
-import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
+import {parseHrtimeToSeconds} from './resources/helpers'
 import uniqid from 'uniqid'
 
 type extraDataType = {date: string}
@@ -18,7 +19,7 @@ class SkyBetCrawler extends BaseCrawler {
 			const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
 
 			//just wait random time before fetching the next page to thow off that we are a bot
-			await this.sleep(getRandomArbitrary(3,15)*1000)  //waits between 3-15s
+			await this.sleep(random(3,15)*1000)  //waits between 3-15s
 			
       let allDom = await this.fetchHtml(`${allMatchesPath}`); //${baseURL}${allMatchesPath}
   
