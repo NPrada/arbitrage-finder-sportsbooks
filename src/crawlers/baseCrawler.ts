@@ -25,6 +25,7 @@ export interface RawGameData {
 
 // TODO use this schema instead
 export interface ParsedGameData { 
+	parentMatchesdId: string | null,
 	uuid: string
 	sportbookId: SportBookIds,
 	competitionName: string

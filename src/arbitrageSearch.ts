@@ -10,20 +10,24 @@ export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
 }; 
 
-type GameMathcedData = {
+type GameMatchedData = {
 	uuid: string,
 	fullName: string,
 	competitionName: string,
+	sportName: string,
 	date: string,
-	betsData:{
-		[key in SportBookIds]: {	
-			markets: {
-				[marketName in MarketNames]: {
-					bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
-				} 
-			}
-		}
-	}
+	team1Name: string,
+	team2Name: string
+	matches: Array<{sportbookId: SportBookIds, uuid: string}>
+	// betsData:{
+	// 	[key in SportBookIds]: {	
+	// 		markets: {
+	// 			[marketName in MarketNames]: {
+	// 				bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
+	// 			} 
+	// 		}
+	// 	}
+	// }
 }
 
 type BetStats = {
@@ -46,14 +50,14 @@ export default class ArbSearch {
   search = () => {
     
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
-    const matchesFound: Array<GameMathcedData> = []
+    const matchesFound: Array<GameMatchedData> = []
 		
 		logJson(this.allGamesCrawled,'allgamesCrawled')
 		const json = JSON.parse(fs.readFileSync('./allgamesCrawled.json').toString());
 
 		console.log(json.egb)
 
-
+			
 		//this is the section of code that looks for bets that match up on two sportbooks
     // this.allGamesCrawled[sportbookIds[0]].map( market1 => {
     //   this.allGamesCrawled[sportbookIds[1]].map( market2 => {
