@@ -4,6 +4,7 @@
   "description": "find profitable arbitrages",
   "main": "src/index.js",
   "scripts": {
+		"docs": "typedoc --out docs src --theme minimal",
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc && echo typescript compiled successfully.. && cp package.json dist && cp package-lock.json dist && cp README.md dist && cp .env dist ",
     "build": "npm run compile  && node dist/src/index.js",
@@ -48,6 +49,7 @@
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.15",
     "@types/uniqid": "^4.1.3",
+    "typedoc": "^0.14.2",
     "typescript": "^3.3.3333"
   }
 }

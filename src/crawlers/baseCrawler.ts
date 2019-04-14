@@ -81,8 +81,13 @@ export default class BaseCrawler {
 				markets: {}
 			}
     }
-    
-    standardiseSportName = (rawSportName: string):SportName => {
+		
+		/**
+		 * Looks for a sportname that we support a formats it in our accepted format
+		 *
+		 * @memberof BaseCrawler
+		 */
+		standardiseSportName = (rawSportName: string):SportName => {
 
         const parsedSportName = rawSportName.toLowerCase().replace(/ /g,'');
         
@@ -113,14 +118,24 @@ export default class BaseCrawler {
         }
     }
     
-    //gets a random user agent
-    fakeUA = (): string => {
+    /**
+		 * gets a random user agent
+		 *
+		 * @memberof BaseCrawler
+		 */
+		fakeUA = (): string => {
 			return UAs[Math.floor(Math.random() * UAs.length)]
     }
 
+		/**
+		 *	Reformat any odds type to the decimal type
+		 *
+		 * @param {*} rawOdd
+		 * @returns {number}
+		 */
 		formatOdds = (rawOdd: any):number => { //add a lot of unit tests
 			if(rawOdd === '' )
-				throw 'odd patter was unrecognized'
+				throw 'odds pattern was unrecognized'
 
 			let parsedOdd: number
 
@@ -136,7 +151,11 @@ export default class BaseCrawler {
 			return parsedOdd
 		}
 
-		//checks for any errors and throws them if it finds any
+		/**
+		 * checks for any errors and throws them if it finds any
+		 *
+		 * @memberof BaseCrawler
+		 */
 		checkForErrors = (rawMarketData: RawGameData): string | null => {
 
 			if (rawMarketData.error) return rawMarketData.error
@@ -151,8 +170,12 @@ export default class BaseCrawler {
 			return null
 		}
 
-    //makes a http request and returns the entire dom
-    fetchHtml = async (url: string): Promise<string> => {
+		/**
+		 * makes a http request and returns the entire dom
+		 *
+		 * @memberof BaseCrawler
+		 */
+		fetchHtml = async (url: string): Promise<string> => {
         let allDom = ''
         await request({
             url: url,
@@ -167,8 +190,12 @@ export default class BaseCrawler {
     }
 
 
-    //applies a regex to a string and throws an error if it fails in some way
-    getRegexSubstr = (string: string, regex: RegExp):string => {
+    /**
+		 * applies a regex to a string and throws an error if it fails in some way
+		 *
+		 * @memberof BaseCrawler
+		 */
+		getRegexSubstr = (string: string, regex: RegExp):string => {
         if (string === '') throw 'ERROR: the string we are ment to match with is blank';
 
         if (regex.test(string) && string.match(regex)!.length === 1) {

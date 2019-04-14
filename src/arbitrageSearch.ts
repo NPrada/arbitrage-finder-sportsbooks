@@ -3,6 +3,8 @@ import date from 'date-and-time'
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import includes from 'lodash/includes'
+import { logJson } from "./crawlers/resources/helpers";
+import  fs  from "fs";
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
@@ -46,6 +48,11 @@ export default class ArbSearch {
     const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
     const matchesFound: Array<GameMathcedData> = []
 		
+		logJson(this.allGamesCrawled,'allgamesCrawled')
+		const json = JSON.parse(fs.readFileSync('./allgamesCrawled.json').toString());
+
+		console.log(json.egb)
+
 
 		//this is the section of code that looks for bets that match up on two sportbooks
     // this.allGamesCrawled[sportbookIds[0]].map( market1 => {
@@ -100,7 +107,7 @@ export default class ArbSearch {
 		sportbookIds.map(sportbookName => {
 			if(isNil(smallerResList) || this.allGamesCrawled[sportbookName].length < smallerResList){
 				smallerResList = this.allGamesCrawled[sportbookName].length
-				smallerSportsbook = spoartbookName
+				smallerSportsbook = sportbookName
 			}
 		})
 
@@ -130,25 +137,26 @@ ${findingsString}`
 	}
 	
   isMatching = (match1:ParsedGameData, match2:ParsedGameData):boolean => {
-    if (isNil(match1.eventName) || isNil(match2.eventName))
-      return false
-    if (isNil(match1.team1.name) || isNil(match2.team1.name) || isNil(match1.team2.name) || isNil(match2.team2.name))
-      return false
+    // if (isNil(match1.competitionName) || isNil(match2.competitionName))
+    //   return false
+    // if (isNil(match1.team1.name) || isNil(match2.team1.name) || isNil(match1.team2.name) || isNil(match2.team2.name))
+    //   return false
 		
-		if(match1.sportName === match2.sportName){
-			debugger
-		}
+		// if(match1.sportName === match2.sportName){
+		// 	debugger
+		// }
+
 		//TODO check for the team name in the substring
 		//TODO check to see if the acronim == the first letters of  the other name
 		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
-		if (this.isTeamNameMatching(match1.team1.name, match2.team1.name) &&
-				this.isTeamNameMatching(match1.team2.name, match2.team2.name)){
-					if(match1.date === match2.date){
-						if (match1.sportName === match2.sportName)
-							return true
-					} 
+		// if (this.isTeamNameMatching(match1.team1.name, match2.team1.name) &&
+		// 		this.isTeamNameMatching(match1.team2.name, match2.team2.name)){
+		// 			if(match1.date === match2.date){
+		// 				if (match1.sportName === match2.sportName)
+		// 					return true
+		// 			} 
 				
-		}		
+		// }		
 		
         //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
          
@@ -168,7 +176,7 @@ ${findingsString}`
 		
 
 		
-		//simply checcks if the two string are the same
+		//simply checks if the two string are the same
 		function mathcFullString(name1:string,name2:string):boolean{
 			const whiteSpaceRegex = /\s/g
 			return name1.toLowerCase().replace(whiteSpaceRegex,'') === name2.toLowerCase().replace(whiteSpaceRegex,'')
@@ -184,7 +192,7 @@ ${findingsString}`
 			return name1Acronym === name2.toUpperCase() || name1.toUpperCase() === name2Acronym 
 		}
 
-		//checks if any of the words are present in the other string
+		/**  checks if any of the words are present in the other string */
 		function matchSingleWord (name1:string, name2:string):boolean { //TODO user tests
 			const splitRegex  = /\s|-|./g //splits the string by spaces, "-" , "."
 			
