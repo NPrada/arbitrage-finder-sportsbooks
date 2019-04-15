@@ -135,8 +135,9 @@ class SkyBetCrawler extends BaseCrawler {
       const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g			//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /.+(?=(\s\())/g 		        //gets it from eg: 'Pixel Esports Club (Bo1)'
       const removeTeam1andVS = /(^.+?((\s\d\sv\s\d)|(\sv\s)))/g  //used to remove first part of regexm mathes eg: 'Infinity eSports v' on 'Infinity eSports v Pixel Esports Club (Bo1)'
-      const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-      const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+			const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+			//TODO fix this error with this regex "ERROR: some error with finding the substring using /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g on [CSGO] WePlay! Forge of Masters – 16:00"
+      const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00' 
       const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const cleanDateRegex = /([A-Z]\w+(?=\s\d+(th|st|nd|rd)))|(?<=\d+)(th|st|nd|rd)/g //eg: matches 'Sunday' and 'th' on: 'Saturday 16th March 2019 22:00' 
       

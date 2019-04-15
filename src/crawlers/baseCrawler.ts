@@ -197,12 +197,12 @@ export default class BaseCrawler {
 		 * @memberof BaseCrawler
 		 */
 		getRegexSubstr = (string: string, regex: RegExp):string => {
-        if (string === '') throw 'ERROR: the string we are ment to match with is blank';
+        if (string === '') throw ' getRegexSubstr() the string we are ment to match with is blank';
 
         if (regex.test(string) && string.match(regex)!.length === 1) {
             return string.match(regex)![0].trim()
         } else {
-            throw `ERROR: some error with finding the substring using ${regex} on ${string}`;
+            throw `at getRegexSubstr() some error with finding the substring using ${regex} on ${string}`;
         }
     }
 }

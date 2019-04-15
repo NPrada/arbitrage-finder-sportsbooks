@@ -55,7 +55,7 @@ export default class ArbSearch {
 		logJson(this.allGamesCrawled,'allgamesCrawled')
 		const json = JSON.parse(fs.readFileSync('./allgamesCrawled.json').toString());
 
-		console.log(json.egb)
+		//console.log(json.egb)
 
 			
 		//this is the section of code that looks for bets that match up on two sportbooks
