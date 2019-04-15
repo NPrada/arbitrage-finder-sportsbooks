@@ -1,10 +1,11 @@
 import {SportBookIds, ParsedGameData, MarketNames} from './crawlers/baseCrawler';
 import date from 'date-and-time'
-import keys from 'lodash/keys'
-import isNil from 'lodash/isNil'
 import includes from 'lodash/includes'
 import { logJson } from "./crawlers/resources/helpers";
 import  fs  from "fs";
+import keys from 'lodash/keys'
+import isNil from 'lodash/isNil'
+import uniqid  from "uniqid";
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
@@ -12,9 +13,8 @@ export type FullMatchData = {
 
 type GameMatchedData = {
 	uuid: string,
-	fullName: string,
-	competitionName: string,
 	sportName: string,
+	competitionName: string,
 	date: string,
 	team1Name: string,
 	team2Name: string
@@ -30,6 +30,9 @@ type GameMatchedData = {
 	// }
 }
 
+type DataDictionary = {
+	[uuid: string]: any
+}
 type BetStats = {
 	arb1: number, //percentage indicates what portion your investment will take up the total winnings.
 	returnOnInvestment: number, //percentage
@@ -42,22 +45,85 @@ type BetStats = {
 export default class ArbSearch {
 
   allGamesCrawled: FullMatchData
+	gameDataDictionary: DataDictionary //this is just a const with a list to all the indivitual crawled game data keyd by id
 
   constructor(allGamesCrawled: FullMatchData) {
-    this.allGamesCrawled = allGamesCrawled;
+		const json:FullMatchData = JSON.parse(fs.readFileSync('./allgamesCrawled.json').toString());
+		this.allGamesCrawled = json; //TODO used for development
+		this.gameDataDictionary = this.transformToObjectList(json)
   }
-
-  search = () => {
-    
-    const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled) as Array<SportBookIds>
-    const matchesFound: Array<GameMatchedData> = []
-		
-		logJson(this.allGamesCrawled,'allgamesCrawled')
-		const json = JSON.parse(fs.readFileSync('./allgamesCrawled.json').toString());
-
-		//console.log(json.egb)
-
+	/**
+	 * Puts every since gameData that was crawled into an object where each entry is using the uui of the gameData
+	 * This is done so we can easily access gameData by id very easily.
+	 * Its more efficient than making a function that goes through the entire list looking for the one 
+	 * that has the particular uuid
+	 * @param FullMatchData 
+	 */
+	transformToObjectList (FullMatchData:FullMatchData): DataDictionary {
 			
+		const gameDataDictionary:DataDictionary = {}
+		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
+
+		sportBookIds.map(sportKey => {
+			this.allGamesCrawled[sportKey].map( (gameData:ParsedGameData) => {
+				gameDataDictionary[gameData.uuid] = gameData 
+			})
+		})
+		
+		return gameDataDictionary
+	}
+
+
+	search = () => {
+		
+		/**
+		 * checks if there alreaady exists a MatchContainer that for that specific game
+		 * @param gameData 
+		 */
+		const canBePutInContainer = (gameData:ParsedGameData, gameMatchContainers:DataDictionary): string => {
+			gameMatchContainers.map( (elem:GameMatchedData) => {
+				elem.matches.map( elem => {
+					if (this.isMatching(this.gameDataDictionary[elem.uuid], gameData)) {
+						return gameMatchContainers.uuid
+					}
+				})
+			})
+			return ''
+		}
+		
+		function makeGameMatchContainer (gameData1:ParsedGameData,gameData2:ParsedGameData):GameMatchedData {
+			return {
+				uuid: uniqid(),
+				sportName: gameData1.sportName,
+				competitionName: gameData1.competitionName,
+				date: gameData1.date,
+				team1Name: gameData1.team1Name,
+				team2Name: gameData1.team2Name,
+				matches: [
+					{sportbookId:gameData1.sportbookId, uuid: gameData1.uuid},
+					{sportbookId:gameData2.sportbookId, uuid: gameData2.uuid}
+				]
+			}
+		}
+		
+		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
+		const gameMatchContainers: DataDictionary = []
+
+		sportBookIds.map(sportBookId => {
+			this.allGamesCrawled[sportBookId].map( (gameData:ParsedGameData) => {
+				
+			})
+		})
+
+		
+		console.log('gameMatchContainers: ',keys(gameMatchContainers).length);
+		console.log('gameDatas: ', keys(this.gameDataDictionary).length);
+		
+		logJson(gameMatchContainers, 'gameMatchContainers')
+		logJson(this.gameDataDictionary, 'gameDataDictionary')
+
+
+		
 		//this is the section of code that looks for bets that match up on two sportbooks
     // this.allGamesCrawled[sportbookIds[0]].map( market1 => {
     //   this.allGamesCrawled[sportbookIds[1]].map( market2 => {
@@ -141,28 +207,23 @@ ${findingsString}`
 	}
 	
   isMatching = (match1:ParsedGameData, match2:ParsedGameData):boolean => {
-    // if (isNil(match1.competitionName) || isNil(match2.competitionName))
-    //   return false
-    // if (isNil(match1.team1.name) || isNil(match2.team1.name) || isNil(match1.team2.name) || isNil(match2.team2.name))
-    //   return false
-		
-		// if(match1.sportName === match2.sportName){
-		// 	debugger
-		// }
-
+    if (isNil(match1.competitionName) || isNil(match2.competitionName))
+      return false
+    if (isNil(match1.team1Name) || isNil(match2.team1Name) || isNil(match1.team2Name) || isNil(match2.team2Name))
+			return false
+			
 		//TODO check for the team name in the substring
 		//TODO check to see if the acronim == the first letters of  the other name
 		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
-		// if (this.isTeamNameMatching(match1.team1.name, match2.team1.name) &&
-		// 		this.isTeamNameMatching(match1.team2.name, match2.team2.name)){
-		// 			if(match1.date === match2.date){
-		// 				if (match1.sportName === match2.sportName)
-		// 					return true
-		// 			} 
-				
-		// }		
+		if (this.isTeamNameMatching(match1.team1Name, match2.team1Name) &&
+				this.isTeamNameMatching(match1.team2Name, match2.team2Name)){
+			if(match1.date === match2.date){
+				if (match1.sportName === match2.sportName)
+					return true
+			} 
+		}		
 		
-        //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
+      //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
          
     return false
 	}
