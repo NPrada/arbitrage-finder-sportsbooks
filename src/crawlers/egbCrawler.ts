@@ -119,6 +119,7 @@ class EGBCrawler extends BaseCrawler {
       
       return {
 				uuid: uniqid(),
+				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
 				competitionName: rawRowData.competitionName,
         sportName: this.standardiseSportName(rawRowData.sportName),

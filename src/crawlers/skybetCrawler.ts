@@ -162,6 +162,7 @@ class SkyBetCrawler extends BaseCrawler {
 
       return {
 				uuid: uniqid(),
+				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
         competitionName: this.getRegexSubstr(rawRowData.competitionName, eventNameRegex),
