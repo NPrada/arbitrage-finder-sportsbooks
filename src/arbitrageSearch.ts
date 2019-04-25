@@ -50,12 +50,12 @@ export default class ArbSearch {
 	gameDataDictionary: DataDictionary //this is just a const with a list to all the indivitual crawled game data keyd by id
 
   constructor(allGamesCrawled: FullMatchData) {
-		const json:FullMatchData = JSON.parse(fs.readFileSync('./allgamesCrawled.json').toString());
-		this.allGamesCrawled = json; //TODO used for development
-		this.gameDataDictionary = this.transformToObjectList(json)
+		this.allGamesCrawled = allGamesCrawled;
+		this.gameDataDictionary = this.transformToObjectList(allGamesCrawled)
   }
 	/**
-	 * Puts every since gameData that was crawled into an object where each entry is using the uui of the gameData
+	 * Puts every gameData that was crawled into an object, where each key is the uuid of the 
+	 * gameData and the data is the gameData object
 	 * This is done so we can easily access gameData by id very easily.
 	 * Its more efficient than making a function that goes through the entire list looking for the one 
 	 * that has the particular uuid
@@ -137,12 +137,14 @@ export default class ArbSearch {
 		const filteredMatchContainers = filter(gameMatchContainers, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
-		console.log(filteredMatchContainers.length);
-		console.log('gameMatchContainers: ',keys(gameMatchContainers).length);
-		console.log('gameDatas: ', keys(this.gameDataDictionary).length);
-		
-		logJson(gameMatchContainers, 'gameMatchContainers')
-		logJson(this.gameDataDictionary, 'gameDataDictionary')
+		console.log('matches found:',filteredMatchContainers.length);
+
+		//error checking
+		if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
+			console.log('(arbSearch) Error: Something does not add up')
+		}
+		// console.log('gameMatchContainers: ',keys(gameMatchContainers).length);
+		// console.log('gameDatas: ', keys(this.gameDataDictionary).length);
 
 
 		// let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
@@ -229,7 +231,7 @@ ${findingsString}`
 		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
 		if (this.isTeamNameMatching(match1.team1Name, match2.team1Name) &&
 				this.isTeamNameMatching(match1.team2Name, match2.team2Name)){
-			//if(match1.date === match2.date){ //FIXME change this to be strict
+			//if(match1.date === match2.date){ //FIXME change this to be strict also you probably need to add localization for EGB
 				if (match1.sportName === match2.sportName)
 					return true
 			//} 
