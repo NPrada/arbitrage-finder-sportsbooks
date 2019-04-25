@@ -22,8 +22,6 @@ export interface RawGameData {
 	error?: string | null
 }
 
-
-// TODO use this schema instead
 export interface ParsedGameData { 
 	parentMatchesdId: string | null,
 	uuid: string
@@ -42,25 +40,6 @@ export interface ParsedGameData {
 	pageHref?: string
 	error?: string 
 }
-
-// const exampleParsedMarketData:ParsedMarketData = { 
-// 	uuid: '123',
-// 	sportbookId: 'skybet',
-// 	competitionName: 'katovice',
-// 	sportName: 'csgo',	
-// 	date: '1/2/1992' ,
-// 	team1Name: 'Nip',
-// 	team2Name: 'Fnatic',
-// 	markets: {
-// 		outright: {
-// 			bets: [
-// 				{ teamKey: 1, betName: 'win', odds: 1.2},
-// 				{ teamKey: 2, betName: 'win', odds: 1.4},
-// 				{ teamKey: 0, betName: 'draw',odds: 1.4}
-// 			]
-// 		}
-// 	}
-// }
 
 export default class BaseCrawler {
 
@@ -164,7 +143,7 @@ export default class BaseCrawler {
       if (!rawMarketData.date) return 'No raw date info was found'        	
       if (!rawMarketData.competitionName) return 'No raw event name was found'   	
 			if (!rawMarketData.team1Name || !rawMarketData.team2Name) return 'No team name data was found'
-			//TODO add checks for the sigle bets
+			//TODO add checks for the single bets
       // if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
 			// if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
 			

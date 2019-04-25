@@ -6,7 +6,7 @@ import BaseCrawler, {RawGameData, ParsedGameData} from './baseCrawler';
 import { parseHrtimeToSeconds, logHtml } from './resources/helpers'
 import uniqid from 'uniqid'
 
-//TODO this needs to be rewritten by hooking into their content api so its much more stable
+//this can be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 

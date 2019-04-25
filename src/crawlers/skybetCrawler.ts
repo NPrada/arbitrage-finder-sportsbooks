@@ -7,7 +7,7 @@ import {parseHrtimeToSeconds} from './resources/helpers'
 import uniqid from 'uniqid'
 
 type extraDataType = {date: string}
-//TODO 
+
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
