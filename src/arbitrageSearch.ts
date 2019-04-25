@@ -137,7 +137,7 @@ export default class ArbSearch {
 		const filteredMatchContainers = filter(gameMatchContainers, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
-		console.log('matches found:',filteredMatchContainers.length);
+		
 
 		//error checking
 		if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
@@ -146,6 +146,7 @@ export default class ArbSearch {
 		// console.log('gameMatchContainers: ',keys(gameMatchContainers).length);
 		// console.log('gameDatas: ', keys(this.gameDataDictionary).length);
 
+		console.log('matches found:',filteredMatchContainers.length);
 
 		// let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
 		// matchesFound.map( (match:{market1:ParsedGameData, market2: ParsedGameData}) => { 
