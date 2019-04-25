@@ -6,6 +6,7 @@ import  fs  from "fs";
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import uniqid  from "uniqid";
+import { log } from 'util';
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
@@ -79,19 +80,22 @@ export default class ArbSearch {
 		/**
 		 * checks if there alreaady exists a MatchContainer that for that specific game
 		 * @param gameData 
+		 * @returns {string} uuid of the container that the gamedata can go in or null
 		 */
 		const canBePutInContainer = (gameData:ParsedGameData, gameMatchContainers:DataDictionary): string => {
-			gameMatchContainers.map( (elem:GameMatchedData) => {
-				elem.matches.map( elem => {
-					if (this.isMatching(this.gameDataDictionary[elem.uuid], gameData)) {
-						return gameMatchContainers.uuid
+			const containersUuids = keys(gameMatchContainers)
+			for(let i=0; i < containersUuids.length; i++){
+				for(let k=0; k < gameMatchContainers[containersUuids[i]].matches.length; k++){
+					const gameUuid = gameMatchContainers[containersUuids[i]].matches[k].uuid
+					if (this.isMatching(this.gameDataDictionary[gameUuid], gameData)) { //checks if its matching or not
+						return gameMatchContainers[containersUuids[i]].uuid
 					}
-				})
-			})
-			return ''
+				}
+			}
+			return null
 		}
 		
-		function makeGameMatchContainer (gameData1:ParsedGameData,gameData2:ParsedGameData):GameMatchedData {
+		function makeGameMatchContainer (gameData1:ParsedGameData):GameMatchedData {
 			return {
 				uuid: uniqid(),
 				sportName: gameData1.sportName,
@@ -101,17 +105,28 @@ export default class ArbSearch {
 				team2Name: gameData1.team2Name,
 				matches: [
 					{sportbookId:gameData1.sportbookId, uuid: gameData1.uuid},
-					{sportbookId:gameData2.sportbookId, uuid: gameData2.uuid}
 				]
 			}
 		}
 		
 		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
-		const gameMatchContainers: DataDictionary = []
+		const gameMatchContainers: DataDictionary = {}
 
 		sportBookIds.map(sportBookId => {
 			this.allGamesCrawled[sportBookId].map( (gameData:ParsedGameData) => {
+				const matchedContainerId = canBePutInContainer(gameData,gameMatchContainers)
 				
+				if (!isNil(matchedContainerId) ) {
+					console.log('heyyy we found a match:', matchedContainerId);
+					gameMatchContainers[matchedContainerId].matches
+						.push({
+							sportBookId: gameData.sportbookId, 
+							uuid: gameData.uuid
+						})
+				} else {
+					const newMatchContainer = makeGameMatchContainer(gameData)
+					gameMatchContainers[newMatchContainer.uuid] = newMatchContainer
+				}
 			})
 		})
 
@@ -217,10 +232,10 @@ ${findingsString}`
 		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
 		if (this.isTeamNameMatching(match1.team1Name, match2.team1Name) &&
 				this.isTeamNameMatching(match1.team2Name, match2.team2Name)){
-			if(match1.date === match2.date){
+			//if(match1.date === match2.date){
 				if (match1.sportName === match2.sportName)
 					return true
-			} 
+			//} 
 		}		
 		
       //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
