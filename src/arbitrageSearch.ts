@@ -1,4 +1,4 @@
-import {SportBookIds, ParsedGameData, MarketNames} from './crawlers/baseCrawler';
+import {SportBookIds, ParsedGameData, BetData} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import includes from 'lodash/includes'
 import { logJson } from "./crawlers/resources/helpers";
@@ -6,6 +6,8 @@ import  fs  from "fs";
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import filter from 'lodash/filter'
+import find from 'lodash/find'
+import maxBy from 'lodash/maxBy'
 import uniqid  from "uniqid";
 import { log } from 'util';
 
@@ -110,7 +112,7 @@ export default class ArbSearch {
 				]
 			}
 		}
-
+	
 	search () {
 		
 		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
@@ -134,7 +136,7 @@ export default class ArbSearch {
 		})
 
 		//filter the containers to only the ones we have matches for
-		const filteredMatchContainers = filter(gameMatchContainers, (container:GameMatchedData) => {
+		const filteredMatchContainers: Array<GameMatchedData> = filter(gameMatchContainers, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
 		
@@ -143,30 +145,42 @@ export default class ArbSearch {
 		if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
 			console.log('(arbSearch) Error: Something does not add up')
 		}
-		// console.log('gameMatchContainers: ',keys(gameMatchContainers).length);
-		// console.log('gameDatas: ', keys(this.gameDataDictionary).length);
 
-		console.log('matches found:',filteredMatchContainers.length);
+		//start the part where we get the profitability of each match we found
+		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
 
-		// let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
-		// matchesFound.map( (match:{market1:ParsedGameData, market2: ParsedGameData}) => { 
-		// 	const team1Max = Math.max(match.market1.team1.odds, match.market2.team1.odds)
-		// 	const team2Max = Math.max(match.market1.team2.odds, match.market2.team2.odds)
+		filteredMatchContainers.forEach((container:GameMatchedData) => {
+			const gameDatasArr: Array<ParsedGameData> = container.matches.map(gameData => {
+				return this.gameDataDictionary[gameData.uuid]
+			});
 			
-		// 	profitMargins.push({
-		// 		market1: match.market1,
-		// 		market2: match.market2,
-		// 		profitInfo: this.getProfitMargin(team1Max,team2Max,10)
-		// 		})
-		// })
+			const arbitraryTeam1 = gameDatasArr[0].team1Name
+			const arbitraryTeam2 = gameDatasArr[0].team2Name
+			const team1Bets: Array<BetData> = []
+			const team2Bets: Array<BetData> = []
+			
+			gameDatasArr.map(gameData => {
+				team1Bets.push(this.getOutrightBetByTeamName(gameData, arbitraryTeam1))
+				team2Bets.push(this.getOutrightBetByTeamName(gameData, arbitraryTeam2))
+			})
 
+			const team1BestOdds = maxBy(team1Bets, (bet: BetData):number => {return bet.odds})
+			const team2BestOdds = maxBy(team2Bets, (bet: BetData):number => {return bet.odds})
+
+			profitMargins.push({
+				market1: this.gameDataDictionary[team1BestOdds.parentUuid],
+				market2: this.gameDataDictionary[team2BestOdds.parentUuid],
+				profitInfo: this.getProfitMargin(team1BestOdds.odds,team2BestOdds.odds,10)
+				})
+		})
+		
 		//TODO check if a single event matches to multiple events on the same sportsbook
-		// const resultreport = this.buildResultsReport(profitMargins)
-		// console.log(resultreport)
-		// return resultreport
+		const resultreport = this.buildResultsReport(profitMargins)
+		console.log(resultreport)
+		return resultreport
 	}
-	
-	getProfitMargin = (ev1: number, ev2: number, stake: number):BetStats => {
+
+	getProfitMargin (ev1: number, ev2: number, stake: number):BetStats {
 		const marginPercent = (((1 / ev1) + (1 / ev2)) * 100);
 		const stake1 = stake;
 		const stake2 = (stake1 * ev1) / ev2;
@@ -221,31 +235,18 @@ ${countProfitable} were profitable arbitrages.
 ${findingsString}`
 	}
 	
-  isMatching = (match1:ParsedGameData, match2:ParsedGameData):boolean => {
-    if (isNil(match1.competitionName) || isNil(match2.competitionName))
-      return false
-    if (isNil(match1.team1Name) || isNil(match2.team1Name) || isNil(match1.team2Name) || isNil(match2.team2Name))
-			return false
-			
-		//TODO check for the team name in the substring
-		//TODO check to see if the acronim == the first letters of  the other name
-		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
-		if (this.isTeamNameMatching(match1.team1Name, match2.team1Name) &&
-				this.isTeamNameMatching(match1.team2Name, match2.team2Name)){
-			//if(match1.date === match2.date){ //FIXME change this to be strict also you probably need to add localization for EGB
-				if (match1.sportName === match2.sportName)
-					return true
-			//} 
-		}		
-		
-      //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
-         
-    return false
+	//gets the outright bet of the teamName that was passed in
+	getOutrightBetByTeamName (gameData: ParsedGameData, teamName: string): BetData {
+		const teamKey = this.isTeamNameMatching(gameData.team1Name,teamName)? 1 : 2;
+		return find(gameData.markets.outright.bets, (bet) => {
+			return bet.teamKey === teamKey
+		})
 	}
-	
-	isTeamNameMatching(name1:string,name2:string){
 
-		if (mathcFullString(name1,name2))
+
+	isTeamNameMatching (name1:string,name2:string) {
+
+		if (matchFullString(name1,name2))
 			return true 
 		else if (matchAcronym(name1,name2))	//tries to match an acronym
 			return true
@@ -257,7 +258,7 @@ ${findingsString}`
 
 		
 		//simply checks if the two string are the same
-		function mathcFullString(name1:string,name2:string):boolean{
+		function matchFullString(name1:string,name2:string):boolean{
 			const whiteSpaceRegex = /\s/g
 			return name1.toLowerCase().replace(whiteSpaceRegex,'') === name2.toLowerCase().replace(whiteSpaceRegex,'')
 		}
@@ -285,4 +286,28 @@ ${findingsString}`
 			return includes(filteredName1, name2) || includes(filteredName2, name1)
 		}
 	}
+
+  isMatching = (match1:ParsedGameData, match2:ParsedGameData):boolean => {
+    if (isNil(match1.competitionName) || isNil(match2.competitionName))
+      return false
+    if (isNil(match1.team1Name) || isNil(match2.team1Name) || isNil(match1.team2Name) || isNil(match2.team2Name))
+			return false
+			
+		//TODO check for the team name in the substring
+		//TODO check to see if the acronim == the first letters of  the other name
+		//TODO check if the team1 name matches the team 2 name and if they are you also need to switch the odds you pass in to check the arb  profit
+		if (this.isTeamNameMatching(match1.team1Name, match2.team1Name) &&
+				this.isTeamNameMatching(match1.team2Name, match2.team2Name)){
+			//if(match1.date === match2.date){ //FIXME change this to be strict also you probably need to add localization for EGB
+				if (match1.sportName === match2.sportName)
+					return true
+			//} 
+		}		
+		
+      //if (match1.eventName.toLowerCase() === match2.eventName.toLowerCase())
+         
+    return false
+	}
+	
+	
 }

@@ -24,7 +24,7 @@ export interface RawGameData {
 }
 
 //teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
-export type BetData = Array<{teamKey: 0|1|2, parentUuid: string, betName: string, odds: number}>
+export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number}
 
 export interface ParsedGameData { 
 	parentMatchesdId: string | null,
