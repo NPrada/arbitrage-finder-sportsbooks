@@ -27,7 +27,7 @@ const crawlerTask = async () => {
 	const arbFinder = new ArbSearch(fullCrawlObject)
 	const findingsReport = arbFinder.search()
 	
-	// await sendMail('Arbitrage Findings Report',findingsReport)
+	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')
 }
 

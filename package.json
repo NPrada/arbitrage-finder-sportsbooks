@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc && echo typescript compiled successfully.. && cp package.json dist && cp package-lock.json dist && cp README.md dist && cp .env dist ",
     "build": "npm run compile  && node dist/src/index.js",
-    "cron": "npm run compile &&  node dist/src/cron.js && echo cron scheduler started..",
+		"cron": "npm run compile &&  node dist/src/cron.js && echo cron scheduler started..",
+		"testdeployment": "node dist/src/index.js",
+		"deploy": "node dist/src/cron.js && echo cron scheduler started..",
     "server": "npm run compile && node dist/src/server/server.js"
   },
   "repository": {
