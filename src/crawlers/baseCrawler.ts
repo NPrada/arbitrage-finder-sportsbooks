@@ -1,5 +1,6 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
+import { type } from 'os';
 
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
@@ -22,6 +23,9 @@ export interface RawGameData {
 	error?: string | null
 }
 
+//teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
+export type BetData = Array<{teamKey: 0|1|2, parentUuid: string, betName: string, odds: number}>
+
 export interface ParsedGameData { 
 	parentMatchesdId: string | null,
 	uuid: string
@@ -33,13 +37,15 @@ export interface ParsedGameData {
 	team2Name: string
 	markets: {
 		[marketName in MarketNames]: {
-			bets: Array<{teamKey: 0|1|2, betName: string, odds: number}>
+			bets: Array<BetData> 
 		}
 	}
 	matchType?: string 
 	pageHref?: string
 	error?: string 
 }
+
+
 
 export default class BaseCrawler {
 

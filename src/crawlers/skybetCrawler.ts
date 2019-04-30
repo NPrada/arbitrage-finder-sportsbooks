@@ -131,7 +131,7 @@ class SkyBetCrawler extends BaseCrawler {
 			if(rawDataError !== null){
 				throw rawDataError
 			}
-      
+      const uuid = uniqid()
       const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g			//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /.+(?=(\s\())/g 		        //gets it from eg: 'Pixel Esports Club (Bo1)'
       const removeTeam1andVS = /(^.+?((\s\d\sv\s\d)|(\sv\s)))/g  //used to remove first part of regexm mathes eg: 'Infinity eSports v' on 'Infinity eSports v Pixel Esports Club (Bo1)'
@@ -157,12 +157,13 @@ class SkyBetCrawler extends BaseCrawler {
 				return {
 					teamKey: element.teamKey, 
 					betName: element.betName,
+					parentUuid: uuid,
 					odds: this.formatOdds(element.odds)
 				}
 			});
-
+											
       return {
-				uuid: uniqid(),
+				uuid: uuid,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
