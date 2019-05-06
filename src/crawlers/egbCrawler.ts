@@ -14,7 +14,7 @@ class EGBCrawler extends BaseCrawler {
     try{
 			const startTime = process.hrtime()
 
-			const browser = await puppeteer.launch();
+			const browser = await puppeteer.launch({args: ['--no-sandbox']});
 			const page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
       await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
