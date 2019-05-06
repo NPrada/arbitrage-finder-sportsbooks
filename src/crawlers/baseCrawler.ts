@@ -77,7 +77,7 @@ export default class BaseCrawler {
 
         const parsedSportName = rawSportName.toLowerCase().replace(/ /g,'');
         
-        const csgoRegex = /counter[-—:_\/]strike|cs[:]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
+        const csgoRegex = /counter[-—:_\/]strike|cs[:|-]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
         const dota2Regex = /dota[-—:_\/]2|(?<!.)dota(2|)(?!.)/g
         const lolRegex = /(league|l)[-—:_\/](of|o)[-—:_\/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
         const sc2Regex = /(?<!.)((starcraft|sc)[-—:_\/]2|(starcraft|sc)(2|))(?!.)/g
@@ -144,12 +144,12 @@ export default class BaseCrawler {
 		 * formats all the odds of an array of BetData objects
 		 * @param bets 
 		 */
-		formatAllMarketOdds (bets:Array<BetData>):Array<BetData> {
+		formatAllMarketOdds (bets:Array<BetData>,parentUuid:string):Array<BetData> {
 			return bets.map((element: any) => {
 				return {
 					teamKey: element.teamKey, 
 					betName: element.betName,
-					parentUuid: uuid,
+					parentUuid: parentUuid,
 					odds: this.formatOdds(element.odds)
 				}
 			});
