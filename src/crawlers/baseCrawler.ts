@@ -1,32 +1,51 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
+import { type } from 'os';
 
-type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" //possible additions: hearthstone, rocket league(might have ties),
+export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
+export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb'
 
-export interface RawMarketData {
-    sportbookId: string
-    eventName: string | null
-    sportName: string | null
-    date: string | null
-    team1: { name: string | null, odds: string | null | number} 
-    team2: { name: string | null, odds: string | null | number}
-    matchType?: string | null
-    pageHref?: string | null
-    error?: string | null
+export interface RawGameData {
+	sportbookId: SportBookIds
+	competitionName: string | null
+	sportName: string | null
+	date: string | null
+	team1Name: string | null
+	team2Name: string | null
+	markets: {
+		[marketName in MarketNames]: {
+			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
+		} | null
+	} | any
+	matchType?: string | null
+	pageHref?: string | null
+	error?: string | null
 }
 
-export interface ParsedMarketData {
-	sportbookId: string
-	eventName: string
-	sportName: string 
+//teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
+export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number}
+
+export interface ParsedGameData { 
+	parentMatchesdId: string | null,
+	uuid: string
+	sportbookId: SportBookIds,
+	competitionName: string
+	sportName: string 		
 	date: string 
-	team1: { name: string , odds: number}
-	team2: { name: string , odds: number}
+	team1Name: string
+	team2Name: string
+	markets: {
+		[marketName in MarketNames]: {
+			bets: Array<BetData> 
+		}
+	}
 	matchType?: string 
 	pageHref?: string
 	error?: string 
 }
+
+
 
 export default class BaseCrawler {
 
@@ -37,28 +56,35 @@ export default class BaseCrawler {
 
 		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promise so we can just use await
     
-    initializeEventData = (): RawMarketData => {
-        return {
-            sportbookId: this.sportBookId,
-            eventName: null,
-            sportName: null,
-            date: null,
-            team1: { name: null, odds: null },
-            team2: { name: null, odds: null }
-        }
+    initializeEventData = (): RawGameData => {
+			return {
+				sportbookId: this.sportBookId,
+				competitionName: null,
+				sportName: null,
+				date: null,
+				team1Name: null,
+				team2Name: null,
+				markets: {}
+			}
     }
-    
-    standardiseSportName = (rawSportName: string):SportName => {
+		
+		/**
+		 * Looks for a sportname that we support a formats it in our accepted format
+		 *
+		 * @memberof BaseCrawler
+		 */
+		standardiseSportName = (rawSportName: string):SportName => {
 
         const parsedSportName = rawSportName.toLowerCase().replace(/ /g,'');
         
-        const csgoRegex = /counter[-—:_/]strike|cs[:]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
-        const dota2Regex = /dota[-—:_/]2|(?<!.)dota(2|)(?!.)/g
-        const lolRegex = /(league|l)[-—:_/](of|o)[-—:_/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
-        const sc2Regex = /(?<!.)((starcraft|sc)[-—:_/]2|(starcraft|sc)(2|))(?!.)/g
+        const csgoRegex = /counter[-—:_\/]strike|cs[:]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
+        const dota2Regex = /dota[-—:_\/]2|(?<!.)dota(2|)(?!.)/g
+        const lolRegex = /(league|l)[-—:_\/](of|o)[-—:_\/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
+        const sc2Regex = /(?<!.)((starcraft|sc)[-—:_\/]2|(starcraft|sc)(2|))(?!.)/g
         const overwatchRegex = /(?<!.)(ow|overwatch)(?!.)/g
-				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_/]6[-—:_/]siege)(?!.)/g
-				const callofdutyRegex = /(?<!.)(callofduty|cod)(?!.)|(call|c)[-—:_/](of|o)[-—:_/](duty|d)/g
+				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_\/]6[-—:_\/]siege)(?!.)/g
+				const callofdutyRegex = /(?<!.)(callofduty|cod)(?!.)|(call|c)[-—:_\/](of|o)[-—:_\/](duty|d)/g
+				const rocketLeagueRegex = /(?<!.)(rocketleague)(?!.)/g
 
         if(csgoRegex.test(parsedSportName))
             return 'csgo'
@@ -74,19 +100,31 @@ export default class BaseCrawler {
 						return 'rainbow6'
 				else if(callofdutyRegex.test(parsedSportName))
 						return 'callofduty'
+				else if (rocketLeagueRegex.test(parsedSportName))
+						return 'rocketleague'
         else{
-            throw `Error: unknown sportname -> ${parsedSportName}`
+            throw `unknown sportname -> ${parsedSportName}`
         }
     }
     
-    //gets a random user agent
-    fakeUA = (): string => {
+    /**
+		 * gets a random user agent
+		 *
+		 * @memberof BaseCrawler
+		 */
+		fakeUA = (): string => {
 			return UAs[Math.floor(Math.random() * UAs.length)]
     }
 
-		formatOdds = (rawOdd: any):number => {
+		/**
+		 *	Reformat any odds type to the decimal type
+		 *
+		 * @param {*} rawOdd
+		 * @returns {number}
+		 */
+		formatOdds = (rawOdd: any):number => { //add a lot of unit tests
 			if(rawOdd === '' )
-				throw 'odd patter was unrecognized'
+				throw 'odds pattern was unrecognized'
 
 			let parsedOdd: number
 
@@ -97,27 +135,36 @@ export default class BaseCrawler {
 				parsedOdd = Number(rawOdd)
 			}
 			
-			if(isNaN(parsedOdd)) throw 'odd patter was unrecognized & could not convert to number'
+			if(isNaN(parsedOdd)) throw 'odd pattern was unrecognized & could not convert to number'
 
 			return parsedOdd
 		}
 
-		//checks for any errors and throws them if it finds any
-		checkForErrors = (rawMarketData: RawMarketData): string | null => {
+		/**
+		 * checks for any errors and throws them if it finds any
+		 *
+		 * @memberof BaseCrawler
+		 */
+		checkForErrors = (rawMarketData: RawGameData): string | null => {
 
 			if (rawMarketData.error) return rawMarketData.error
       if (!rawMarketData.sportName) return 'No raw sport name was found'   	
       if (!rawMarketData.date) return 'No raw date info was found'        	
-      if (!rawMarketData.eventName) return 'No raw event name was found'   	
-      if (!rawMarketData.team1 || !rawMarketData.team2) return 'No team data was found'
-      if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
-			if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
+      if (!rawMarketData.competitionName) return 'No raw event name was found'   	
+			if (!rawMarketData.team1Name || !rawMarketData.team2Name) return 'No team name data was found'
+			//TODO add checks for the single bets
+      // if (!rawMarketData.team1.name || !rawMarketData.team2.name) return 'No raw team name was found'
+			// if (!rawMarketData.team1.odds || !rawMarketData.team2.odds) return 'No raw team odds were found'
 			
 			return null
 		}
 
-    //makes a http request and returns the entire dom
-    fetchHtml = async (url: string): Promise<string> => {
+		/**
+		 * makes a http request and returns the entire dom
+		 *
+		 * @memberof BaseCrawler
+		 */
+		fetchHtml = async (url: string): Promise<string> => {
         let allDom = ''
         await request({
             url: url,
@@ -131,14 +178,19 @@ export default class BaseCrawler {
         return allDom
     }
 
-    //applies a regex to a string and throws an error if it fails in some way
-    getRegexSubstr = (string: string, regex: RegExp):string => {
-        if (string === '') throw 'ERROR: the string we are ment to match with is blank';
+
+    /**
+		 * applies a regex to a string and throws an error if it fails in some way
+		 *
+		 * @memberof BaseCrawler
+		 */
+		getRegexSubstr = (string: string, regex: RegExp):string => {
+        if (string === '') throw ' getRegexSubstr() the string we are ment to match with is blank';
 
         if (regex.test(string) && string.match(regex)!.length === 1) {
             return string.match(regex)![0].trim()
         } else {
-            throw `ERROR: some error with finding the substring using ${regex} on ${string}`;
+            throw `at getRegexSubstr() some error with finding the substring using ${regex} on ${string}`;
         }
     }
 }

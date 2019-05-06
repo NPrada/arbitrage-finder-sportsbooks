@@ -4,10 +4,13 @@
   "description": "find profitable arbitrages",
   "main": "src/index.js",
   "scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"compile": "tsc && echo typescript compiled successfully.. && cp package.json dist && cp package-lock.json dist && cp README.md dist && cp .env dist ",
-		"build": "npm run compile  && node dist/src/index.js",
-    "cron": "npm run compile &&  node dist/src/cron.js && echo cron scheduler started..",
+		"docs": "typedoc --out docs src --theme minimal",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc && echo typescript compiled successfully.. && cp package.json dist && cp package-lock.json dist && cp README.md dist && cp .env dist ",
+    "build": "npm run compile  && node dist/src/index.js",
+		"cron": "npm run compile &&  node dist/src/cron.js && echo cron scheduler started..",
+		"testdeployment": "node src/index.js",
+		"deploy": "node src/cron.js && echo cron scheduler started..",
     "server": "npm run compile && node dist/src/server/server.js"
   },
   "repository": {
@@ -30,7 +33,8 @@
     "nodemailer": "^5.1.1",
     "puppeteer": "^1.13.0",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.7"
+    "request-promise-native": "^1.0.7",
+    "uniqid": "^5.0.3"
   },
   "devDependencies": {
     "@types/body-parser": "^1.17.0",
@@ -46,6 +50,8 @@
     "@types/puppeteer": "^1.12.2",
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.15",
+    "@types/uniqid": "^4.1.3",
+    "typedoc": "^0.14.2",
     "typescript": "^3.3.3333"
   }
 }

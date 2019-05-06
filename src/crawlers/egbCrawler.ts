@@ -2,14 +2,15 @@ import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, {RawMarketData, ParsedMarketData} from './baseCrawler';
-import { parseHrtimeToSeconds } from './resources/helpers'
+import BaseCrawler, {RawGameData, ParsedGameData} from './baseCrawler';
+import { parseHrtimeToSeconds, logHtml } from './resources/helpers'
+import uniqid from 'uniqid'
 
-//TODO this needs to be rewritten by hooking into their content api so its much more stable
+//this can be rewritten by hooking into their content api so its much more stable
 class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 
-  run = async ():Promise<Array<ParsedMarketData>> => {
+  run = async ():Promise<Array<ParsedGameData>> => {
     try{
 			const startTime = process.hrtime()
 
@@ -17,9 +18,10 @@ class EGBCrawler extends BaseCrawler {
 			const page = await browser.newPage();
       await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
       await page.setUserAgent(this.fakeUA())
-      await page.setViewport({width: 1500, height:1000})
+      await page.setViewport({width: 1500, height:2500})
       
-      await page.waitForSelector("#app")
+			await page.waitForSelector("#app")
+			await page.screenshot({path: 'egb-state1.png'});
 			let allDom = await page.evaluate(() => {
         if(document !== null && document.getElementById("app") !== null) {         
           return document.getElementById("app")!.innerHTML
@@ -35,7 +37,7 @@ class EGBCrawler extends BaseCrawler {
 			if (eventsTable === null)
 				throw `Error: could not find the table containing all the events`
 	
-			const matchDataList: Array<ParsedMarketData> = []
+			const matchDataList: Array<ParsedGameData> = []
 	
 			for (let i = 0; i < eventsTable.length; i++) {
 				const rawData = this.getRawRowData(eventsTable.eq(i))
@@ -45,7 +47,11 @@ class EGBCrawler extends BaseCrawler {
 
 			await browser.close();
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-			if(!matchDataList.length) throw Error('No errors logged but we didnt get any match data at all try restarting')
+			if(!matchDataList.length) {
+				logHtml(allDom)
+				await page.screenshot({path: 'egb-state2.png'});
+				throw Error('No errors logged but we didnt get any match data at all try restarting')
+			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
 			return matchDataList
 		}catch(err){
@@ -55,7 +61,7 @@ class EGBCrawler extends BaseCrawler {
   }
 
   //gets the raw data for each field that then needs to be parsed
-  getRawRowData = (tableRow: Cheerio | null): RawMarketData => {
+  getRawRowData = (tableRow: Cheerio | null): RawGameData => {
     const matchData = this.initializeEventData()
     if (tableRow === null) {
       matchData.error = 'We could not find html for this table row'
@@ -70,32 +76,43 @@ class EGBCrawler extends BaseCrawler {
     
     matchData.date = tableRow.find("[itemprop='startDate']").attr('content')
     matchData.sportName = tableRow.find(".table-bets__content").find(".table-bets__event > img").attr('alt')
-    matchData.eventName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
-    matchData.team1.name = tableRow.find('.table-bets__player1 > span').attr('title')
-    matchData.team2.name = tableRow.find('.table-bets__player2 > span').attr('title')
-    matchData.team1.odds = tableRow.find('.table-bets__col-1').find('.bet-rate').text()
-    matchData.team2.odds = tableRow.find('.table-bets__col-3').find('.bet-rate').text()
-      
+    matchData.competitionName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
+    matchData.team1Name = tableRow.find('.table-bets__player1 > span').attr('title')
+		matchData.team2Name = tableRow.find('.table-bets__player2 > span').attr('title')
+		matchData.markets = { outright:{ bets: []} }
+		matchData.markets.outright.bets = [
+			{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},
+			{teamKey:2, betName: 'win', odds: tableRow.find('.table-bets__col-3').find('.bet-rate').text()}
+		]
+
     //TODO add puppeteer click on row and get url since its just clientside 
 
     return matchData
   }
 
   //parses & cleans the data that was scraped, returns null if some field is blank so it does not get added to the results
-  parseRawData = (rawRowData: RawMarketData): ParsedMarketData | null => {
+  parseRawData = (rawRowData: RawGameData): ParsedGameData | null => {
     try{
 
+			const uuid = uniqid()
+			
 			//look for any erros in the raw data and throw them if you find any
 			const rawDataError = this.checkForErrors(rawRowData)
 			if(rawDataError !== null){
 				throw rawDataError
 			}
-
-			rawRowData.team1.odds = Number(rawRowData.team1.odds)
-			rawRowData.team2.odds = Number(rawRowData.team2.odds)
-			if (isNaN(rawRowData.team1.odds) || isNaN(rawRowData.team2.odds)) throw 'Could not convert the odd string to a number'
 			
-
+			//format all the bets odds in the outright market
+			const outrightBets = rawRowData.markets.outright.bets.map((element: any) => {
+				return {
+					teamKey: element.teamKey, 
+					betName: element.betName,
+					parentUuid: uuid,
+					odds: this.formatOdds(element.odds)
+				}
+			});
+			
+			//parse & format the date
 			let formattedDate: string
 			if(date.isValid(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')){
 				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
@@ -103,17 +120,21 @@ class EGBCrawler extends BaseCrawler {
 			} else throw 'Problem parsing the date'
 
       
-
       return {
+				uuid: uuid,
+				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
-				eventName: rawRowData.eventName,
+				competitionName: rawRowData.competitionName,
         sportName: this.standardiseSportName(rawRowData.sportName),
 				date: formattedDate,
-				team1: {name: rawRowData.team1.name, odds: rawRowData.team1.odds},
-				team2: {name: rawRowData.team2.name, odds: rawRowData.team2.odds}
+				team1Name: rawRowData.team1Name,
+				team2Name: rawRowData.team2Name,
+				markets: { 
+					outright: {	bets:  outrightBets	}  
+				}
       }
-    }catch(e){
-      console.log(e)
+    }catch(e){ //logs an error and discards this gameData
+      console.log('(egb) Non Blocking Error: ' + e)
       return null
     }
   }

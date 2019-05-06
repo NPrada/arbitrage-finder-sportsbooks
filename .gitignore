@@ -1,9 +1,17 @@
 .idea
 dist
+docs
 node_modules
-*.env
-*.html
 .vscode
+
+
+# secrets
+*.env 
+
+# Files used for debugging
 egb.json
 skybet.json
+allgamesCrawled.json
+*.html
 *.png
+.debugging

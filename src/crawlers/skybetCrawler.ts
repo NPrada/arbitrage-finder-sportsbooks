@@ -1,16 +1,17 @@
 import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, { RawMarketData ,ParsedMarketData } from './baseCrawler';
-import {parseHrtimeToSeconds, getRandomArbitrary} from './resources/helpers'
-
+import random from 'lodash/random'
+import BaseCrawler, { RawGameData ,ParsedGameData } from './baseCrawler';
+import {parseHrtimeToSeconds} from './resources/helpers'
+import uniqid from 'uniqid'
 
 type extraDataType = {date: string}
-//TODO 
+
 class SkyBetCrawler extends BaseCrawler {
   baseURL = 'https://m.skybet.com';
 
-  run = async ():Promise<Array<ParsedMarketData>> => {
+  run = async ():Promise<Array<ParsedGameData>> => {
     try{
       const startTime = process.hrtime()
 
@@ -18,14 +19,14 @@ class SkyBetCrawler extends BaseCrawler {
 			const allMatchesPath = await this.getPathToAllMatchesByDay(baseUrlDom) 
 
 			//just wait random time before fetching the next page to thow off that we are a bot
-			await this.sleep(getRandomArbitrary(3,15)*1000)  //waits between 3-15s
+			await this.sleep(random(3,15)*1000)  //waits between 3-15s
 			
-      let allDom = await this.fetchHtml(`${this.baseURL}${allMatchesPath}`); //${baseURL}${allMatchesPath}
+      let allDom = await this.fetchHtml(`${allMatchesPath}`); //${baseURL}${allMatchesPath}
   
       const $ = cheerio.load(allDom);
       const allDayTables = $('ul.table-group', '#page-content').find('li')
   
-      const matchDataList: Array<ParsedMarketData> = []
+      const matchDataList: Array<ParsedGameData> = []
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
@@ -59,19 +60,19 @@ class SkyBetCrawler extends BaseCrawler {
       .attr('href')
 
       
-    if (isNil(marketsListPath)) throw Error('Crawler was unable to get the link to the markets by day page')
+    if (isNil(marketsListPath)) throw Error(`Crawler was unable to get the link to the markets by day page, what it got was null, probably the location of the "All Matches By Day" button has changed`)
   
-    return marketsListPath
+    return this.baseURL + marketsListPath
   }
 
-  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedMarketData> => {
+  getMatchDataFromDayTable = (tableHtml: string | null): Array<ParsedGameData> => {
 
     if (isNil(tableHtml) || tableHtml === '')
       throw Error('getMatchDataFromDayTable got no table html to work with')
 
     const $ = cheerio.load(tableHtml);
 
-    const data: Array<ParsedMarketData> = []
+    const data: Array<ParsedGameData> = []
     let rowElem: Cheerio
     let currHeaderText: string = ''
 
@@ -105,14 +106,16 @@ class SkyBetCrawler extends BaseCrawler {
         if (!matchHref) rawMatchData.error =  'could not find the match link'
         
         rawMatchData.date = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
-        rawMatchData.eventName = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
+        rawMatchData.competitionName = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
         rawMatchData.sportName = currHeaderText //'R6 - Rainbow 6 Pro League Europe – 18:00'
-        rawMatchData.pageHref = this.baseURL + matchHref
-        rawMatchData.team1.odds = odds1
-        rawMatchData.team2.odds = odds2
-        rawMatchData.team1.name = matchNameString //'Infinity eSports v Pixel Esports Club (Bo1)'
-        rawMatchData.team2.name = matchNameString //'Infinity eSports v Pixel Esports Club (Bo1)'
-          
+				rawMatchData.pageHref = this.baseURL + matchHref
+				rawMatchData.team1Name = matchNameString 	// eg:'Infinity eSports v Pixel Esports Club (Bo1)'
+				rawMatchData.team2Name = matchNameString	// eg:'Infinity eSports v Pixel Esports Club (Bo1)'
+				rawMatchData.markets = {outright: {bets: [
+					{teamKey: 1, betName: 'win', odds: odds1},
+					{teamKey: 2, betName: 'win', odds: odds2},
+				]}}
+         
         const parsedRowData = this.parseRawData(rawMatchData, {date: date})
         
         if(parsedRowData !== null) data.push(parsedRowData)
@@ -121,7 +124,7 @@ class SkyBetCrawler extends BaseCrawler {
     return data;
     }
   
-  parseRawData = (rawRowData: RawMarketData, extraData: extraDataType): ParsedMarketData | null => {
+  parseRawData = (rawRowData: RawGameData, extraData: extraDataType): ParsedGameData | null => {
     try{
 
 			//look for any erros in the raw data and throw them if you find any
@@ -129,17 +132,18 @@ class SkyBetCrawler extends BaseCrawler {
 			if(rawDataError !== null){
 				throw rawDataError
 			}
-      
+      const uuid = uniqid()
       const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g			//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /.+(?=(\s\())/g 		        //gets it from eg: 'Pixel Esports Club (Bo1)'
       const removeTeam1andVS = /(^.+?((\s\d\sv\s\d)|(\sv\s)))/g  //used to remove first part of regexm mathes eg: 'Infinity eSports v' on 'Infinity eSports v Pixel Esports Club (Bo1)'
-      const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
-      const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+			const sportNameRegx = /^.*?(?=(\-|\–|\—))/g					// ^.*?(?=\s(\-|\–|\—)  gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
+			//TODO fix this error with this regex "ERROR: some error with finding the substring using /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g on [CSGO] WePlay! Forge of Masters – 16:00"
+      const eventNameRegex = /(?<=[\-\–\—]\s*)(.*)(?=\s*[\–\-\—].*)/g 	//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00' 
       const timeRegex = /\d\d:\d\d/g					//gets it from eg: 'R6 - Rainbow 6 Pro League Europe – 18:00'
       const cleanDateRegex = /([A-Z]\w+(?=\s\d+(th|st|nd|rd)))|(?<=\d+)(th|st|nd|rd)/g //eg: matches 'Sunday' and 'th' on: 'Saturday 16th March 2019 22:00' 
       
       //remove the first part of the regex, it makes it easier to match the relevant section
-      rawRowData.team2.name = rawRowData.team2.name.replace(this.getRegexSubstr(rawRowData.team1.name, removeTeam1andVS),'') 
+      rawRowData.team2Name = rawRowData.team2Name.replace(this.getRegexSubstr(rawRowData.team1Name, removeTeam1andVS),'') 
       
       //does the parsing ad formattting of the date
       let rawDateString = `${extraData.date} ${this.getRegexSubstr(rawRowData.date, timeRegex)}` //puts all the info in a string
@@ -149,22 +153,30 @@ class SkyBetCrawler extends BaseCrawler {
 				const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
 			} else throw 'Problem parsing the date'
-      
+			
+			const outrightBets = rawRowData.markets.outright.bets.map((element: any) => {
+				return {
+					teamKey: element.teamKey, 
+					betName: element.betName,
+					parentUuid: uuid,
+					odds: this.formatOdds(element.odds)
+				}
+			});
+											
       return {
+				uuid: uuid,
+				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
-        eventName: this.getRegexSubstr(rawRowData.eventName, eventNameRegex),
-        sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
-				team1: {
-					name: this.getRegexSubstr(rawRowData.team1.name, team1regx), 
-					odds: this.formatOdds(rawRowData.team1.odds) },
-				team2: {
-					name: this.getRegexSubstr(rawRowData.team2.name, team2regx), 
-					odds: this.formatOdds(rawRowData.team2.odds)},
+        competitionName: this.getRegexSubstr(rawRowData.competitionName, eventNameRegex),
+				sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
+				team1Name: this.getRegexSubstr(rawRowData.team1Name, team1regx),
+				team2Name: this.getRegexSubstr(rawRowData.team2Name, team2regx),
+				markets: {outright: {bets: outrightBets}}
       }
     }catch(e){
       
-      console.log('Non Blocking Error:',e)
+      console.log('(sky) Non Blocking Error:',e)
       return null
     }
   }
