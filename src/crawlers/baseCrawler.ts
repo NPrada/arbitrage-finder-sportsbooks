@@ -4,7 +4,7 @@ import { type } from 'os';
 
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
-export type SportBookIds = 'skybet' | 'egb'
+export type SportBookIds = 'skybet' | 'egb' | 'betway'
 
 export interface RawGameData {
 	sportbookId: SportBookIds
@@ -138,6 +138,21 @@ export default class BaseCrawler {
 			if(isNaN(parsedOdd)) throw 'odd pattern was unrecognized & could not convert to number'
 
 			return parsedOdd
+		}
+
+		/**
+		 * formats all the odds of an array of BetData objects
+		 * @param bets 
+		 */
+		formatAllMarketOdds (bets:Array<BetData>):Array<BetData> {
+			return bets.map((element: any) => {
+				return {
+					teamKey: element.teamKey, 
+					betName: element.betName,
+					parentUuid: uuid,
+					odds: this.formatOdds(element.odds)
+				}
+			});
 		}
 
 		/**

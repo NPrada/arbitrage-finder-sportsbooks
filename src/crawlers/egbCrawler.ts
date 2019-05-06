@@ -103,14 +103,7 @@ class EGBCrawler extends BaseCrawler {
 			}
 			
 			//format all the bets odds in the outright market
-			const outrightBets = rawRowData.markets.outright.bets.map((element: any) => {
-				return {
-					teamKey: element.teamKey, 
-					betName: element.betName,
-					parentUuid: uuid,
-					odds: this.formatOdds(element.odds)
-				}
-			});
+			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright)
 			
 			//parse & format the date
 			let formattedDate: string
