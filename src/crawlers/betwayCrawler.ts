@@ -54,21 +54,25 @@ export default class BetwayCrawler extends BaseCrawler {
 		}
 			
 		if(isNil(Cheerio.attr('collectionitem'))){
+			console.log('(betway) Error: we did not find a collectionitem');
 			console.log(Cheerio.html());
 		}
 
-		const raw_SportAndDayAndTournamentName = Cheerio.attr('collectionitem')
+		const matchDataList: Array<ParsedGameData> = []
+
+		const raw_SportAndTournamentNameAndDay = Cheerio.attr('collectionitem')
 		const gameRows = Cheerio.find('.eventItemCollection > .oneLineEventItem')
 		
 		for (let i = 0; i < gameRows.length; i++) {
 			const gameRow = gameRows.eq(i);
 
-			this.getRawRowData(gameRow, raw_SportAndDayAndTournamentName)
+			const rawData = this.getRawRowData(gameRow, raw_SportAndTournamentNameAndDay)
+			const parsedData = this.parseRawData(rawData)
+			if (parsedData !== null) matchDataList.push(parsedData)
 
-			
 		}
 
-		return []
+		return matchDataList
 	}
 
 	parseRawData(rawRowData:RawGameData):ParsedGameData {
@@ -83,17 +87,14 @@ export default class BetwayCrawler extends BaseCrawler {
 			}
 
 			//format all the bets odds in the outright market
-			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright,uuid)
+			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright.bets,uuid)
 			
 			//parse & format the date
 			let formattedDate: string
-			if(date.isValid(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')){
-				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm:ss')
+			if(date.isValid(rawRowData.date, 'YYYY-MM-DD-HH:mm')){
+				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
 			} else throw 'Problem parsing the date'
-
-			console.log('date:',formattedDate);
-			
 
 			return {
 				uuid: uuid,
@@ -118,23 +119,25 @@ export default class BetwayCrawler extends BaseCrawler {
 	}
 
 
-	getRawRowData(tableRow: Cheerio, raw_SportAndDayAndTournamentName:string):RawGameData {
-		const parsed_SportAndDayAndTournamentName = raw_SportAndDayAndTournamentName.split('_').filter(elem => elem !== 'esports')
+	getRawRowData(tableRow: Cheerio, raw_SportAndTournamentNameAndDay:string):RawGameData {
+		const parsed_SportAndTournamentNameAndDay = raw_SportAndTournamentNameAndDay.split('_').filter(elem => elem !== 'esports')
 	
 		const rawMatchData = this.initializeEventData()
-		rawMatchData.competitionName = parsed_SportAndDayAndTournamentName[1]
-		rawMatchData.competitionName = parsed_SportAndDayAndTournamentName[0]
+		rawMatchData.competitionName = parsed_SportAndTournamentNameAndDay[1]
+		rawMatchData.sportName = parsed_SportAndTournamentNameAndDay[0]
 		rawMatchData.team1Name = tableRow.find('.eventDetails').find('.teamNameHome').find('.teamNameFirstPart').text()
 		rawMatchData.team2Name = tableRow.find('.eventDetails').find('.teamNameAway').find('.teamNameFirstPart').text()
 		rawMatchData.date = 
-			parsed_SportAndDayAndTournamentName[2] + 
+			parsed_SportAndTournamentNameAndDay[2] + 
 			'-' + 
 			tableRow.find('.eventDetails').find('.oneLineDateTime').text()
 		rawMatchData.pageHref = tableRow.find('.eventDetails').find('.scoreboardInfoNames').attr('href')
 		
 
 		const betCells = tableRow.find('.eventMarket').find('.baseOutcomeItem')
-			
+
+
+		rawMatchData.markets = { outright:{ bets: []} } //initalize the markets object
 		for (let i = 0; i < betCells.length; i++) {
 			rawMatchData.markets.outright.bets.push(
 				{teamKey: i+1, betName:'win', odds: betCells.eq(i).find('.oddsDisplay').text()}
