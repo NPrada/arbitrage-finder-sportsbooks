@@ -103,7 +103,7 @@ class EGBCrawler extends BaseCrawler {
 			}
 			
 			//format all the bets odds in the outright market
-			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright,uuid)
+			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright.bets,uuid)
 			
 			//parse & format the date
 			let formattedDate: string
