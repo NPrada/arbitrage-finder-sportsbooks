@@ -3,47 +3,78 @@ import puppeteer, {Page} from 'puppeteer'
 import date from 'date-and-time'
 import BaseCrawler, {RawGameData, ParsedGameData} from "./baseCrawler";
 import uniqid from 'uniqid'
-import { parseHrtimeToSeconds, logHtml, waitForNetworkIdle } from './resources/helpers'
+import random from 'lodash/random'
+import { parseHrtimeToSeconds, logHtml, waitForNetworkIdle, logJson } from './resources/helpers'
 import isNil = require("lodash/isNil");
 
 
 export default class BetwayCrawler extends BaseCrawler {
 	baseURL = 'https://sports.betway.com'
 
-	run = async () => { //:Promise<Array<ParsedGameData>>
-		const startTime = process.hrtime()
+	run = async ():Promise<Array<ParsedGameData>> => {
+		try{
+			const startTime = process.hrtime()
 
 			const browser = await puppeteer.launch({
 				//'args' : [ '--incognito' ],
 				headless: false,
-				//slowMo: 100
+				slowMo: 200
 			}); 
 			
 			const page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
-			
-			const csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
+			const maxRequestDelay = 8;
+			const minRequestDelay = 2;
 
-			const daysList = this.getDayTableCheerio(csgoHtml)
+			const sportDaysLists = []
+
+			const csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			//const lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
+			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			// const dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
+			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			// const rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
+			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			// const overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
+			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			// const sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
+			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			// const hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
+			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+
+			
+			sportDaysLists.push(this.getDayTableCheerio(csgoHtml))
+			//sportDaysLists.push(this.getDayTableCheerio(lolHtml))
+			// sportDaysLists.push(this.getDayTableCheerio(dota2Html))
+			// sportDaysLists.push(this.getDayTableCheerio(rainbowHtml))
+			// sportDaysLists.push(this.getDayTableCheerio(overwatchHtml))
+			// sportDaysLists.push(this.getDayTableCheerio(sc2Html))
+			// sportDaysLists.push(this.getDayTableCheerio(hearthsoneHtml))
+
 			
 			await page.screenshot({path: 'debugging/betway-state.png'});	
 			const matchDataList: Array<ParsedGameData> = []
-			for (let i = 0; i < daysList.length; i++) {
-				matchDataList.push(...this.getMatchDataFromDayTable(daysList[i]))
+			for (let k = 0; k < sportDaysLists.length; k++) {
+				const daysList = sportDaysLists[k];
+				for (let i = 0; i < daysList.length; i++) {
+					matchDataList.push(...this.getMatchDataFromDayTable(daysList[i]))
+				}
 			}
-
-
-		
 			
-			await browser.close();
+
+		await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-		console.log(`betway crawler finished in ${elapsedTime}s`);
-		
+		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
+		logJson(matchDataList, 'betway')
+		return matchDataList;
+		}catch(err){
+      console.log('BLOCKING ERROR')
+      console.log(err)
+      return []
+    }	
 	}
-
-
-
 
 
 	getMatchDataFromDayTable (Cheerio: Cheerio):Array<ParsedGameData> {
@@ -94,7 +125,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			if(date.isValid(rawRowData.date, 'YYYY-MM-DD-HH:mm')){
 				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
-			} else throw 'Problem parsing the date'
+			} else throw `Problem parsing the date. Tried to parse: "${rawRowData.date}"`
 
 			return {
 				uuid: uuid,
@@ -188,13 +219,11 @@ export default class BetwayCrawler extends BaseCrawler {
 		do{
 			const handles = await page.$$('.collapsableHeader[collapsed=true]');
 			buttonsNum = handles.length
-			console.log('legnth', handles.length);
 			await handles[0].click()
 			
 		}while(buttonsNum > 1)
 	
 		await waitForNetworkIdle(page,100,0)
-		console.log('gotten dom');
 		
 		const html = await page.content()
 		return html;
