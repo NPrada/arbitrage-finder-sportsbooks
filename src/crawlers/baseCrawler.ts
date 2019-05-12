@@ -124,7 +124,7 @@ export default class BaseCrawler {
 		 */
 		formatOdds = (rawOdd: any):number => { //add a lot of unit tests
 			if(rawOdd === '' )
-				throw 'odds pattern was unrecognized'
+				throw 'odds pattern was unrecognized (empty string)'
 
 			let parsedOdd: number
 
