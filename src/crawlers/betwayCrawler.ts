@@ -52,7 +52,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			sportDaysLists.push(this.getDayTableCheerio(sc2Html))
 			sportDaysLists.push(this.getDayTableCheerio(hearthsoneHtml))
 
-			
+		
 			await page.screenshot({path: 'debugging/betway-state.png'});	
 			const matchDataList: Array<ParsedGameData> = []
 			for (let k = 0; k < sportDaysLists.length; k++) {
