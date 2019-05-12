@@ -82,7 +82,7 @@ export default class BaseCrawler {
         const lolRegex = /(league|l)[-—:_\/](of|o)[-—:_\/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
         const sc2Regex = /(?<!.)((starcraft|sc)[-—:_\/]2|(starcraft|sc)(2|))(?!.)/g
         const overwatchRegex = /(?<!.)(ow|overwatch)(?!.)/g
-				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_\/]6[-—:_\/]siege)(?!.)/g
+				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_\/]6[-—:_\/]siege|rainbow[-—:_\/](six|6))(?!.)/g
 				const callofdutyRegex = /(?<!.)(callofduty|cod)(?!.)|(call|c)[-—:_\/](of|o)[-—:_\/](duty|d)/g
 				const rocketLeagueRegex = /(?<!.)(rocketleague)(?!.)/g
 
