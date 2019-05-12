@@ -23,15 +23,6 @@ type GameMatchedData = {
 	team1Name: string,
 	team2Name: string
 	matches: Array<{sportbookId: SportBookIds, uuid: string}>
-	// betsData:{
-	// 	[key in SportBookIds]: {	
-	// 		markets: {
-	// 			[marketName in MarketNames]: {
-	// 				bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
-	// 			} 
-	// 		}
-	// 	}
-	// }
 }
 
 type DataDictionary = {
