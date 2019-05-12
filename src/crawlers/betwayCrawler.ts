@@ -17,8 +17,8 @@ export default class BetwayCrawler extends BaseCrawler {
 
 			const browser = await puppeteer.launch({
 				//'args' : [ '--incognito' ],
-				headless: false,
-				slowMo: 200
+				//headless: false,
+				//slowMo: 200
 			}); 
 			
 			const page = await browser.newPage();
