@@ -58,7 +58,7 @@ export default class ArbSearch {
 			
 		const gameDataDictionary:DataDictionary = {}
 		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
-
+		
 		sportBookIds.map(sportKey => {
 			this.allGamesCrawled[sportKey].map( (gameData:ParsedGameData) => {
 				gameDataDictionary[gameData.uuid] = gameData 

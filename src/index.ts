@@ -12,6 +12,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
 
 import {exampleCrawlerResponse} from './crawlers/resources/crawlResponse'
+import { logJson } from './crawlers/resources/helpers';
 
 const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
@@ -19,20 +20,19 @@ const betwayCrawler = new BetwayCrawler('betway')
 
 const crawlerTask = async () => {
 	console.log('Starting crawl task....')
-	betwayCrawler.run()
-	//const betwayResults = betwayCrawler.run()
-  // const skyResults = skyBetCrawler.run()
-	// const egbResults = egbCrawler.run()
+	const betwayResults = betwayCrawler.run()
+  const skyResults = skyBetCrawler.run()
+	const egbResults = egbCrawler.run()
 
+	// waits for all functions to finish before continuing
+	const allResults = [await egbResults, await skyResults, await betwayResults]; 
 
-	// // //waits for both functions to finish before continuing
- 	// const allResults = [await egbResults, await skyResults]; 
-	// const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1]}
-
-	// const arbFinder = new ArbSearch(fullCrawlObject)
-	// const findingsReport = arbFinder.search()
+	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1], betway: allResults[2]}
 	
-	// await sendMail('Arbitrage Findings Report',findingsReport)
+	const arbFinder = new ArbSearch(fullCrawlObject)
+	const findingsReport = arbFinder.search()
+	
+	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')
 }
 
