@@ -52,7 +52,7 @@ class EGBCrawler extends BaseCrawler {
 				await page.screenshot({path: 'egb-state2.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
-			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
+			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
 			console.log("CRITICAL ERROR:",err)

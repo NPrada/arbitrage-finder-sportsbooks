@@ -130,12 +130,11 @@ export default class ArbSearch {
 		const filteredMatchContainers: Array<GameMatchedData> = filter(gameMatchContainers, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
-		
 
-		//error checking
-		if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
-			console.log('(arbSearch) Error: Something does not add up')
-		}
+		// FIXME: error checking
+		// if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
+		// 	console.log('(arbSearch) Error: Something does not add up maybe')
+		// }
 
 		//start the part where we get the profitability of each match we found
 		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []

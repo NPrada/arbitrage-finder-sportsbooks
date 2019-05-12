@@ -12,7 +12,6 @@ import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
 
 import {exampleCrawlerResponse} from './crawlers/resources/crawlResponse'
-import { logJson } from './crawlers/resources/helpers';
 
 const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')

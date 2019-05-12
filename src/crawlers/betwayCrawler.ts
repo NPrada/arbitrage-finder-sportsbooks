@@ -31,18 +31,25 @@ export default class BetwayCrawler extends BaseCrawler {
 
 			const csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 12.5% crawling complete');
 			const lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 25% crawling complete');
 			const dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 37.5% crawling complete');
 			const rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 50% crawling complete');
 			const overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 62.5% crawling complete');
 			const sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 75% crawling complete');
 			const hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			console.log('(betway) 87.5% crawling complete');
 
 			sportDaysLists.push(this.getDayTableCheerio(csgoHtml))
 			sportDaysLists.push(this.getDayTableCheerio(lolHtml))
@@ -64,7 +71,7 @@ export default class BetwayCrawler extends BaseCrawler {
 
 		await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
+		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 		logJson(matchDataList, 'betway')
 		return matchDataList;
 		}catch(err){
