@@ -31,27 +31,26 @@ export default class BetwayCrawler extends BaseCrawler {
 
 			const csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			//const lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
-			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			// const dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
-			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			// const rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
-			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			// const overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
-			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			// const sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
-			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			// const hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
-			// await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			const lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			const dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			const rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			const overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			const sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+			const hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
+			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 
-			
 			sportDaysLists.push(this.getDayTableCheerio(csgoHtml))
-			//sportDaysLists.push(this.getDayTableCheerio(lolHtml))
-			// sportDaysLists.push(this.getDayTableCheerio(dota2Html))
-			// sportDaysLists.push(this.getDayTableCheerio(rainbowHtml))
-			// sportDaysLists.push(this.getDayTableCheerio(overwatchHtml))
-			// sportDaysLists.push(this.getDayTableCheerio(sc2Html))
-			// sportDaysLists.push(this.getDayTableCheerio(hearthsoneHtml))
+			sportDaysLists.push(this.getDayTableCheerio(lolHtml))
+			sportDaysLists.push(this.getDayTableCheerio(dota2Html))
+			sportDaysLists.push(this.getDayTableCheerio(rainbowHtml))
+			sportDaysLists.push(this.getDayTableCheerio(overwatchHtml))
+			sportDaysLists.push(this.getDayTableCheerio(sc2Html))
+			sportDaysLists.push(this.getDayTableCheerio(hearthsoneHtml))
 
 			
 			await page.screenshot({path: 'debugging/betway-state.png'});	
@@ -219,7 +218,9 @@ export default class BetwayCrawler extends BaseCrawler {
 		do{
 			const handles = await page.$$('.collapsableHeader[collapsed=true]');
 			buttonsNum = handles.length
-			await handles[0].click()
+			if(!isNil(handles[0])){
+				await handles[0].click()
+			}
 			
 		}while(buttonsNum > 1)
 	
