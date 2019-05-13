@@ -24,8 +24,8 @@ export default class BetwayCrawler extends BaseCrawler {
 			const page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
-			const maxRequestDelay = 8;
-			const minRequestDelay = 2;
+			const maxRequestDelay = 5;
+			const minRequestDelay = 1;
 
 			const sportDaysLists = []
 
@@ -51,13 +51,13 @@ export default class BetwayCrawler extends BaseCrawler {
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 			console.log('(betway) 87.5% crawling complete');
 
-			sportDaysLists.push(this.getDayTableCheerio(csgoHtml))
-			sportDaysLists.push(this.getDayTableCheerio(lolHtml))
-			sportDaysLists.push(this.getDayTableCheerio(dota2Html))
-			sportDaysLists.push(this.getDayTableCheerio(rainbowHtml))
-			sportDaysLists.push(this.getDayTableCheerio(overwatchHtml))
-			sportDaysLists.push(this.getDayTableCheerio(sc2Html))
-			sportDaysLists.push(this.getDayTableCheerio(hearthsoneHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(csgoHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(lolHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(dota2Html))
+			sportDaysLists.push(this.getDaysTableCheerio(rainbowHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(overwatchHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(sc2Html))
+			sportDaysLists.push(this.getDaysTableCheerio(hearthsoneHtml))
 
 		
 			const matchDataList: Array<ParsedGameData> = []
@@ -190,7 +190,7 @@ export default class BetwayCrawler extends BaseCrawler {
 	 * gets the cheerio elements for each day day of matches per tournament
 	 * @param fullPageHtml 
 	 */
-	getDayTableCheerio (fullPageHtml:string):Array<Cheerio> {
+	getDaysTableCheerio (fullPageHtml:string):Array<Cheerio> {
 		const $ = cheerio.load(fullPageHtml)
 		const rawDaysList = $('.eventTableItemCollection[data-widget*="EventTableListWidget"]')
 
