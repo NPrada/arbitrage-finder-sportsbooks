@@ -45,6 +45,7 @@ export default class ArbSearch {
   constructor(allGamesCrawled: FullMatchData) {
 		this.allGamesCrawled = allGamesCrawled;
 		this.gameDataDictionary = this.transformToObjectList(allGamesCrawled)
+		logJson(this.transformToObjectList(allGamesCrawled),'dataDictionary')
   }
 	/**
 	 * Puts every gameData that was crawled into an object, where each key is the uuid of the 
@@ -130,7 +131,7 @@ export default class ArbSearch {
 		const filteredMatchContainers: Array<GameMatchedData> = filter(gameMatchContainers, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
-
+		logJson(filteredMatchContainers,'fullCrawlObject')
 		// FIXME: error checking
 		// if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
 		// 	console.log('(arbSearch) Error: Something does not add up maybe')

@@ -1,0 +1,119 @@
+//FIXME: there should not be any layout css it should all be in the sport framework next to its component
+//FIXME: use variables instead of hardcoding color values 
+.mainLayoutContainer{
+  transition: all 0.5s ease-in-out;
+  &.staticHeight{
+      height: 269px;
+  }
+  &.extended-height{
+      height: 408px;
+      transition: all 0.5s ease-in-out;
+  }
+  .scrollPanelContainer{
+      height: 145px;
+  }
+  .scrollPanelContainer{
+    height: 140px;
+  }
+}
+.rightViewContainer{
+   overflow: hidden;
+}
+
+.navBarContainer{ //FIXME: navbar scss should not be in the sport specific scss, I think it can be removed
+justify-content: space-between;
+}
+
+
+/*************** Sport specific ****************/
+.scoreboardPitchContainer {
+max-width: 410px;   //FIXME: this probably should not be set here, 
+vertical-align: middle;
+> img {
+margin-bottom: 20px;
+box-shadow: none; //needed to remove black line under pitch between stat data
+}
+}
+
+.teamColor{
+  height: 20px;
+  margin-top: 2px;
+}
+
+.timelineContainer {
+  height: 21px;
+}
+.textContainer{
+  display: flex;  //FIXME: layout
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  font-family: Verdana;  //FIXME: this should not be set in the sport specific scss, unless its a sport specific
+  //for actionInfoText above pitch
+  #mainBlackBoardText{
+      font-size: 13px;
+      color:rgb(8, 210, 40); 
+  }
+
+  #lowerBlackBoardText{
+      font-size: 9px;
+      color: #d7e3ff;
+  }
+}
+
+
+.matchTimeline{
+  width: 100%;
+  height: 14px;
+  display: flex; //FIXME: layout
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  font-weight: 300;
+  .setTitle{
+        width: 40px;
+        text-align: center; //FIXME: layout
+        color: #979797;
+        margin-right: 16px;
+  }
+  .setScore{
+         width: 30px;
+         height: 14px;
+         line-height: 14px;
+         text-align: center; //FIXME: layout
+         color: #585858;
+         background-color: #CACACA;
+         margin-right: 16px;
+         font-weight: 700;
+  }
+  .set{
+      display: flex; //FIXME: layout
+      margin: 0 16px 0 0;
+      font-weight: 700;
+      &.currentSet{
+          display: none;
+      }
+      &.ended{
+          display: flex; //FIXME: layout
+      }
+      .divider{
+          margin: 0 4px 0 4px;
+          color: #7d7d7d;
+          &.currentSet{
+              color: black;
+          }
+      }
+
+      .homeScore{
+          color: #7d7d7d;
+      }
+      .awayScore{
+          color: #7d7d7d;
+      }
+  }
+}
+
+}
+

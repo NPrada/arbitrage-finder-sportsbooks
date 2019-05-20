@@ -51,14 +51,28 @@ export default class BetwayCrawler extends BaseCrawler {
 			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 			console.log('(betway) 87.5% crawling complete');
 
-			sportDaysLists.push(this.getDaysTableCheerio(csgoHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(lolHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(dota2Html))
-			sportDaysLists.push(this.getDaysTableCheerio(rainbowHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(overwatchHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(sc2Html))
-			sportDaysLists.push(this.getDaysTableCheerio(hearthsoneHtml))
-
+			if(!isNil(csgoHtml)){
+				sportDaysLists.push(this.getDaysTableCheerio(csgoHtml))
+			}
+			if(!isNil(lolHtml)){
+				sportDaysLists.push(this.getDaysTableCheerio(lolHtml))
+			}
+			if(!isNil(dota2Html)){
+				sportDaysLists.push(this.getDaysTableCheerio(dota2Html))
+			}
+			if(!isNil(rainbowHtml)){
+				sportDaysLists.push(this.getDaysTableCheerio(rainbowHtml))
+			}
+			if(!isNil(overwatchHtml)){
+				sportDaysLists.push(this.getDaysTableCheerio(overwatchHtml))
+			}
+			if(!isNil(sc2Html)){
+				sportDaysLists.push(this.getDaysTableCheerio(sc2Html))
+			}
+			if(!isNil(hearthsoneHtml)){
+				sportDaysLists.push(this.getDaysTableCheerio(hearthsoneHtml))
+			}
+				
 		
 			const matchDataList: Array<ParsedGameData> = []
 			for (let k = 0; k < sportDaysLists.length; k++) {
@@ -70,6 +84,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			
 
 		await browser.close();
+		logJson(matchDataList, 'betway')
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 		logJson(matchDataList, 'betway')
@@ -150,8 +165,6 @@ export default class BetwayCrawler extends BaseCrawler {
 			console.log('(betway) Non Blocking Error: ' + e)
       return null
 		}
-
-
 	}
 
 
@@ -217,22 +230,30 @@ export default class BetwayCrawler extends BaseCrawler {
 	 * @memberof BetwayCrawler
 	 */
 	getDom = async (page:Page, url:string):Promise<string> => {
+		try{
+			await page.goto(url, { waitUntil: 'networkidle0' });
+			const currUrl = page.url().trim().split('/')
+
+			if(currUrl[currUrl.length-1] === 'esports')
+				throw `No games found for this sport ${url.trim().split('/')[url.trim().split('/').length - 1]}`
+
+			let buttonsNum = 0;
+			do{
+				const handles = await page.$$('.collapsableHeader[collapsed=true]');
+				buttonsNum = handles.length
+				if(!isNil(handles[0])){
+					await handles[0].click()
+				}
+				
+			}while(buttonsNum > 1)
 		
-		await page.goto(url, { waitUntil: 'networkidle0' });
-	
-		let buttonsNum = 0;
-		do{
-			const handles = await page.$$('.collapsableHeader[collapsed=true]');
-			buttonsNum = handles.length
-			if(!isNil(handles[0])){
-				await handles[0].click()
-			}
+			await waitForNetworkIdle(page,100,0)
 			
-		}while(buttonsNum > 1)
-	
-		await waitForNetworkIdle(page,100,0)
-		
-		const html = await page.content()
-		return html;
-	}
+			const html = await page.content()
+			return html;
+		} catch(err) {
+				console.log(`(${this.sportBookId}) Non Blocking Error: ${err}`);
+				return null
+		}
+	}	
 }
