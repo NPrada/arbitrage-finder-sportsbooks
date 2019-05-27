@@ -16,6 +16,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			const startTime = process.hrtime()
 
 			const browser = await puppeteer.launch({
+				'args': ['--no-sandbox'],
 				//'args' : [ '--incognito' ],
 				//headless: false,
 				//slowMo: 200
