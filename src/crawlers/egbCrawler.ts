@@ -21,7 +21,6 @@ class EGBCrawler extends BaseCrawler {
       await page.setViewport({width: 1500, height:2500})
       
 			await page.waitForSelector("#app")
-			await page.screenshot({path: 'egb-state1.png'});
 			let allDom = await page.evaluate(() => {
         if(document !== null && document.getElementById("app") !== null) {         
           return document.getElementById("app")!.innerHTML
@@ -49,7 +48,6 @@ class EGBCrawler extends BaseCrawler {
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			if(!matchDataList.length) {
 				logHtml(allDom)
-				await page.screenshot({path: 'egb-state2.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
