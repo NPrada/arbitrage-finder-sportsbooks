@@ -2,7 +2,6 @@ import {SportBookIds, ParsedGameData, BetData} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import includes from 'lodash/includes'
 import { logJson } from "./crawlers/resources/helpers";
-import  fs  from "fs";
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import filter from 'lodash/filter'

@@ -73,7 +73,7 @@ export default class BetwayCrawler extends BaseCrawler {
 		await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
-		logJson(matchDataList, 'betway')
+		//logJson(matchDataList, 'betway')
 		return matchDataList;
 		}catch(err){
       console.log('BLOCKING ERROR')
