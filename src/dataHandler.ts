@@ -14,7 +14,7 @@ export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
 }; 
 
-type GameMatchedData = {
+type GameDataContainer = {
 	uuid: string,
 	sportName: string,
 	competitionName: string,
@@ -89,7 +89,7 @@ export default class DataHandler {
 		 * function to create a new blank container with whatever data we need in it
 		 * @param gameData1 
 		 */
-		makeGameMatchContainer (gameData1:ParsedGameData):GameMatchedData {
+		makeGameMatchContainer (gameData1:ParsedGameData):GameDataContainer {
 			return {
 				uuid: uniqid(),
 				sportName: gameData1.sportName,
@@ -131,14 +131,14 @@ export default class DataHandler {
 	getProfitability(gameContainersDictionary: DataDictionary){
 
 		//filter the containers to only the ones we have matches for
-		const filteredMatchContainers: Array<GameMatchedData> = filter(gameContainersDictionary, (container:GameMatchedData) => {
+		const filteredMatchContainers: Array<GameDataContainer> = filter(gameContainersDictionary, (container:GameDataContainer) => {
 			return container.matches.length > 1
 		})
 
 		//start the part where we get the profitability of each match we found
 		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
 
-		filteredMatchContainers.forEach((container:GameMatchedData) => {
+		filteredMatchContainers.forEach((container:GameDataContainer) => {
 			const gameDatasArr: Array<ParsedGameData> = container.matches.map(gameData => {
 				return this.gameDataDictionary[gameData.uuid]
 			});
