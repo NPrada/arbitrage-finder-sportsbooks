@@ -15,17 +15,17 @@ export default class BetwayCrawler extends BaseCrawler {
 		let browser = null
 		try{
 			const startTime = process.hrtime()
-
+			
+			//prepping puppeteer browser
 			browser = await puppeteer.launch({
 				'args': ['--no-sandbox'],
-				//'args' : [ '--incognito' ],
 				//headless: false,
 				//slowMo: 200
 			}); 
-			
 			const page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
+
 			const maxRequestDelay = 5;
 			const minRequestDelay = 1;
 
