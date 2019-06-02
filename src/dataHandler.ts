@@ -36,7 +36,7 @@ type BetStats = {
 	bet2: { odd: number, stake: number }
 }
 
-export default class ArbSearch {
+export default class DataHandler {
 
   allGamesCrawled: FullMatchData
 	gameDataDictionary: DataDictionary //this is just a const with a list to all the indivitual crawled game data keyd by id
@@ -103,7 +103,7 @@ export default class ArbSearch {
 			}
 		}
 	
-	search () {
+	matchGames () {
 		
 		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
 		const gameContainersDictionary: DataDictionary = {}
@@ -125,15 +125,15 @@ export default class ArbSearch {
 			})
 		})
 
+		return gameContainersDictionary
+	}
+
+	getProfitability(gameContainersDictionary: DataDictionary){
+
 		//filter the containers to only the ones we have matches for
 		const filteredMatchContainers: Array<GameMatchedData> = filter(gameContainersDictionary, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
-
-		// FIXME: error checking
-		// if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
-		// 	console.log('(arbSearch) Error: Something does not add up maybe')
-		// }
 
 		//start the part where we get the profitability of each match we found
 		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []

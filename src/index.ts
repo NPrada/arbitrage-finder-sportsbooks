@@ -6,7 +6,7 @@
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
 import BetwayCrawler from './crawlers/betwayCrawler'
-import ArbSearch from './arbitrageSearch'
+import DataHandler from './dataHandler'
 import sendMail from './emailer'
 import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
@@ -28,8 +28,9 @@ const crawlerTask = async () => {
 
 	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1], betway: allResults[2]}
 	
-	const arbFinder = new ArbSearch(fullCrawlObject)
-	const findingsReport = arbFinder.search()
+	const arbFinder = new DataHandler(fullCrawlObject)
+	const allGameContainers = arbFinder.matchGames()
+	const findingsReport = arbFinder.getProfitability(allGameContainers)
 	
 	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')
