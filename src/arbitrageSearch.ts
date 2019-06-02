@@ -106,27 +106,27 @@ export default class ArbSearch {
 	search () {
 		
 		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
-		const gameMatchContainers: DataDictionary = {}
+		const gameContainersDictionary: DataDictionary = {}
 
 		sportBookIds.map(sportBookId => {
 			this.allGamesCrawled[sportBookId].map( (gameData:ParsedGameData) => {
-				const matchedContainerId = this.dataCanBePutInContainer(gameData,gameMatchContainers)
+				const matchedContainerId = this.dataCanBePutInContainer(gameData,gameContainersDictionary)
 				
 				if (!isNil(matchedContainerId) ) {
-					gameMatchContainers[matchedContainerId].matches
+					gameContainersDictionary[matchedContainerId].matches
 						.push({
 							sportBookId: gameData.sportbookId, 
 							uuid: gameData.uuid
 						})
 				} else {
 					const newMatchContainer = this.makeGameMatchContainer(gameData)
-					gameMatchContainers[newMatchContainer.uuid] = newMatchContainer
+					gameContainersDictionary[newMatchContainer.uuid] = newMatchContainer
 				}
 			})
 		})
 
 		//filter the containers to only the ones we have matches for
-		const filteredMatchContainers: Array<GameMatchedData> = filter(gameMatchContainers, (container:GameMatchedData) => {
+		const filteredMatchContainers: Array<GameMatchedData> = filter(gameContainersDictionary, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
 
