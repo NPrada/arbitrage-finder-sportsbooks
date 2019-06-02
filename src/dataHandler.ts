@@ -1,7 +1,7 @@
-import {SportBookIds, ParsedGameData, BetData} from './crawlers/baseCrawler';
+import {SportBookIds, ParsedGameData, BetData, MarketNames} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import includes from 'lodash/includes'
-import { logJson } from "./crawlers/resources/helpers";
+import { findMarketObject, logJson } from "./crawlers/resources/helpers";
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import filter from 'lodash/filter'
@@ -225,11 +225,21 @@ ${findingsString}`
 	}
 	
 	//gets the outright bet of the teamName that was passed in
-	getOutrightBetByTeamName (gameData: ParsedGameData, teamName: string): BetData {
-		const teamKey = this.isTeamNameMatching(gameData.team1Name,teamName)? 1 : 2;
-		return find(gameData.markets.outright.bets, (bet) => {
-			return bet.teamKey === teamKey
-		})
+	getOutrightBetByTeamName (gameData: ParsedGameData, teamName: string, marketName: MarketNames = 'outright'): BetData {
+		try {
+			const marketData = findMarketObject(marketName, gameData.markets)
+			const teamKey = this.isTeamNameMatching(gameData.team1Name,teamName)? 1 : 2;
+			return find(marketData.bets, (bet) => {
+				return bet.teamKey === teamKey
+			})
+		}
+		catch(err){
+			console.log('-------------------------------------------')
+			console.log('gameData',gameData);
+			console.log('ERROR:'+ err);
+			
+		}
+	
 	}
 
 
@@ -243,8 +253,6 @@ ${findingsString}`
 			return true
 		else
 			return false
-		
-
 		
 		//simply checks if the two string are the same
 		function matchFullString(name1:string,name2:string):boolean{

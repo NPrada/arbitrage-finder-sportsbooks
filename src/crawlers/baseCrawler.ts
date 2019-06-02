@@ -6,6 +6,12 @@ export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatc
 export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb' | 'betway'
 
+export type RawBetData = {teamKey: 0|1|2, betName: string , odds: number | string}
+export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number} //teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
+
+export type RawMarketData = {marketName: MarketNames, bets: Array<RawBetData>}
+export type MarketData = {marketName: MarketNames, bets: Array<BetData>}
+
 export interface RawGameData {
 	sportbookId: SportBookIds
 	competitionName: string | null
@@ -13,18 +19,13 @@ export interface RawGameData {
 	date: string | null
 	team1Name: string | null
 	team2Name: string | null
-	markets: {
-		[marketName in MarketNames]: {
-			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
-		} | null
-	} | any
+	markets: Array<RawMarketData>
 	matchType?: string | null
 	pageHref?: string | null
 	error?: string | null
 }
 
-//teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
-export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number}
+
 
 export interface ParsedGameData { 
 	parentMatchesdId: string | null,
@@ -35,11 +36,7 @@ export interface ParsedGameData {
 	date: string 
 	team1Name: string
 	team2Name: string
-	markets: {
-		[marketName in MarketNames]: {
-			bets: Array<BetData> 
-		}
-	}
+	markets: Array<MarketData>
 	matchType?: string 
 	pageHref?: string
 	error?: string 
@@ -64,7 +61,7 @@ export default class BaseCrawler {
 				date: null,
 				team1Name: null,
 				team2Name: null,
-				markets: {}
+				markets: []
 			}
     }
 		
@@ -144,7 +141,8 @@ export default class BaseCrawler {
 		 * formats all the odds of an array of BetData objects
 		 * @param bets 
 		 */
-		formatAllMarketOdds (bets:Array<BetData>,parentUuid:string):Array<BetData> {
+		formatAllMarketOdds (bets:Array<RawBetData>,parentUuid:string):Array<BetData> { //FIXME: is parentUuid needed?
+			
 			return bets.map((element: any) => {
 				return {
 					teamKey: element.teamKey, 
@@ -207,5 +205,15 @@ export default class BaseCrawler {
         } else {
             throw `at getRegexSubstr() some error with finding the substring using ${regex} on ${string}`;
         }
-    }
+		}
+
+		getTeamKey (index: number): 0 | 1 | 2 {
+			let teamKey: 0 | 1 | 2 = 1
+			if (index === 1)
+				teamKey = 1
+			else if (index === 2)
+				teamKey = 2
+
+			return teamKey
+		}
 }

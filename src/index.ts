@@ -23,7 +23,7 @@ const crawlerTask = async () => {
   const skyResults = skyBetCrawler.run()
 	const egbResults = egbCrawler.run()
 
-	// waits for all functions to finish before continuing
+	// waits for all functions to finish before continuing, done this way so they all run concurrently
 	const allResults = [await egbResults, await skyResults, await betwayResults]; 
 
 	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1], betway: allResults[2]}

@@ -2,7 +2,7 @@ import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, {RawGameData, ParsedGameData} from './baseCrawler';
+import BaseCrawler, {RawGameData, ParsedGameData, MarketData, RawMarketData} from './baseCrawler';
 import { parseHrtimeToSeconds, logHtml } from './resources/helpers'
 import uniqid from 'uniqid'
 
@@ -83,11 +83,14 @@ class EGBCrawler extends BaseCrawler {
     matchData.competitionName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
     matchData.team1Name = tableRow.find('.table-bets__player1 > span').attr('title')
 		matchData.team2Name = tableRow.find('.table-bets__player2 > span').attr('title')
-		matchData.markets = { outright:{ bets: []} }
-		matchData.markets.outright.bets = [
-			{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},
-			{teamKey:2, betName: 'win', odds: tableRow.find('.table-bets__col-3').find('.bet-rate').text()}
-		]
+		matchData.markets = []
+		matchData.markets.push({
+			marketName: 'outright',
+			bets: [
+				{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},
+				{teamKey:2, betName: 'win', odds: tableRow.find('.table-bets__col-3').find('.bet-rate').text()}
+			]
+		})
 
     //TODO add puppeteer click on row and get url since its just clientside 
 
@@ -106,8 +109,14 @@ class EGBCrawler extends BaseCrawler {
 				throw rawDataError
 			}
 			
-			//format all the bets odds in the outright market
-			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright.bets,uuid)
+			//format all the bets odds in the markets
+			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
+				const parsedMarketData: MarketData = {
+					...elem,
+					bets: this.formatAllMarketOdds(elem.bets, uuid)
+				}
+				return parsedMarketData
+			})
 			
 			//parse & format the date
 			let formattedDate: string
@@ -126,9 +135,7 @@ class EGBCrawler extends BaseCrawler {
 				date: formattedDate,
 				team1Name: rawRowData.team1Name,
 				team2Name: rawRowData.team2Name,
-				markets: { 
-					outright: {	bets:  outrightBets	}  
-				}
+				markets: parsedMarkets
       }
     }catch(e){ //logs an error and discards this gameData
       console.log('(egb) Non Blocking Error: ' + e)

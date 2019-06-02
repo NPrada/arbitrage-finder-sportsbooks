@@ -1,7 +1,7 @@
 import cheerio from "cheerio";
 import puppeteer, {Page} from 'puppeteer'
 import date from 'date-and-time'
-import BaseCrawler, {RawGameData, ParsedGameData} from "./baseCrawler";
+import BaseCrawler, {RawGameData, ParsedGameData, MarketData, RawMarketData} from "./baseCrawler";
 import uniqid from 'uniqid'
 import random from 'lodash/random'
 import { parseHrtimeToSeconds, logHtml, waitForNetworkIdle, logJson } from './resources/helpers'
@@ -116,48 +116,7 @@ export default class BetwayCrawler extends BaseCrawler {
 		return matchDataList
 	}
 
-	parseRawData(rawRowData:RawGameData):ParsedGameData {
-		try{
-			
-			const uuid = uniqid()
 
-			//look for any erros in the raw data and throw them if you find any
-			const rawDataError = this.checkForErrors(rawRowData)
-			if(rawDataError !== null){
-				throw rawDataError
-			}
-
-			//format all the bets odds in the outright market
-			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright.bets,uuid)
-			
-			//parse & format the date
-			let formattedDate: string
-			if(date.isValid(rawRowData.date, 'YYYY-MM-DD-HH:mm')){
-				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm')
-				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
-			} else throw `Problem parsing the date. Tried to parse: "${rawRowData.date}"`
-
-			return {
-				uuid: uuid,
-				parentMatchesdId: null,
-				sportbookId: rawRowData.sportbookId,
-				competitionName: rawRowData.competitionName,
-        sportName: this.standardiseSportName(rawRowData.sportName),
-				date: formattedDate,
-				team1Name: rawRowData.team1Name,
-				team2Name: rawRowData.team2Name,
-				markets: { 
-					outright: {	bets:  outrightBets	}  
-				}
-      }
-
-		}catch(e){
-			console.log('(betway) Non Blocking Error: ' + e)
-      return null
-		}
-
-
-	}
 
 
 	getRawRowData(tableRow: Cheerio, raw_SportAndTournamentNameAndDay:string):RawGameData {
@@ -177,19 +136,63 @@ export default class BetwayCrawler extends BaseCrawler {
 
 		const betCells = tableRow.find('.eventMarket').find('.baseOutcomeItem')
 
-
-		rawMatchData.markets = { outright:{ bets: []} } //initalize the markets object
+		const outrightData: RawMarketData = { marketName: 'outright', bets: []}
 		for (let i = 0; i < betCells.length; i++) {
-			rawMatchData.markets.outright.bets.push(
-				{teamKey: i+1, betName:'win', odds: betCells.eq(i).find('.oddsDisplay').text()}
+			outrightData.bets.push(
+				{teamKey: this.getTeamKey(i+1), betName:'win', odds: betCells.eq(i).find('.oddsDisplay').text()}
 			)		
 		}
+		rawMatchData.markets.push(outrightData)
 
 		return rawMatchData
 	}
 
 
+	parseRawData(rawRowData:RawGameData):ParsedGameData {
+		try{
+			
+			const uuid = uniqid()
 
+			//look for any erros in the raw data and throw them if you find any
+			const rawDataError = this.checkForErrors(rawRowData)
+			if(rawDataError !== null){
+				throw rawDataError
+			}
+
+			//format all the bets odds in the markets
+			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
+				const parsedMarketData: MarketData = {
+					...elem,
+					bets: this.formatAllMarketOdds(elem.bets, uuid)
+				}
+				return parsedMarketData
+			})
+			
+			
+			//parse & format the date
+			let formattedDate: string
+			if(date.isValid(rawRowData.date, 'YYYY-MM-DD-HH:mm')){
+				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm')
+				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
+			} else throw `Problem parsing the date. Tried to parse: "${rawRowData.date}"`
+
+			return {
+				uuid: uuid,
+				parentMatchesdId: null,
+				sportbookId: rawRowData.sportbookId,
+				competitionName: rawRowData.competitionName,
+        sportName: this.standardiseSportName(rawRowData.sportName),
+				date: formattedDate,
+				team1Name: rawRowData.team1Name,
+				team2Name: rawRowData.team2Name,
+				markets: parsedMarkets
+      }
+
+		}catch(e){
+			console.log('(betway) Non Blocking Error: ' + e)
+      return null
+		}
+	}
 
 	/**
 	 * gets the cheerio elements for each day day of matches per tournament
