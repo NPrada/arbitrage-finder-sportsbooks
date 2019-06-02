@@ -11,10 +11,11 @@ class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 
   run = async ():Promise<Array<ParsedGameData>> => {
+		let browser = null
     try{
 			const startTime = process.hrtime()
 
-			const browser = await puppeteer.launch({args: ['--no-sandbox']});
+			browser = await puppeteer.launch({args: ['--no-sandbox']});
 			const page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
       await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
@@ -54,6 +55,9 @@ class EGBCrawler extends BaseCrawler {
 			return matchDataList
 		}catch(err){
 			console.log("CRITICAL ERROR:",err)
+			if (!isNil(browser)) {
+				await browser.close()
+			} 
 			return []
 		}
   }

@@ -12,10 +12,11 @@ export default class BetwayCrawler extends BaseCrawler {
 	baseURL = 'https://sports.betway.com'
 
 	run = async ():Promise<Array<ParsedGameData>> => {
+		let browser = null
 		try{
 			const startTime = process.hrtime()
 
-			const browser = await puppeteer.launch({
+			browser = await puppeteer.launch({
 				'args': ['--no-sandbox'],
 				//'args' : [ '--incognito' ],
 				//headless: false,
@@ -77,7 +78,10 @@ export default class BetwayCrawler extends BaseCrawler {
 		return matchDataList;
 		}catch(err){
       console.log('BLOCKING ERROR')
-      console.log(err)
+			console.log(err)
+			if (!isNil(browser)) {
+				await browser.close()
+			} 
       return []
     }	
 	}
