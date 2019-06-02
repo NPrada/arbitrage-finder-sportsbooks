@@ -4,7 +4,7 @@ import { type } from 'os';
 
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
-export type SportBookIds = 'skybet' | 'egb'
+export type SportBookIds = 'skybet' | 'egb' | 'betway'
 
 export interface RawGameData {
 	sportbookId: SportBookIds
@@ -77,12 +77,12 @@ export default class BaseCrawler {
 
         const parsedSportName = rawSportName.toLowerCase().replace(/ /g,'');
         
-        const csgoRegex = /counter[-—:_\/]strike|cs[:]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
+        const csgoRegex = /counter[-—:_\/]strike|cs[:|-]go|(?<!.)csgo(?!.)|(?<!.)counterstrike(globaloffensive|go)(?!.)/g
         const dota2Regex = /dota[-—:_\/]2|(?<!.)dota(2|)(?!.)/g
         const lolRegex = /(league|l)[-—:_\/](of|o)[-—:_\/](legends|l)|(?<!.)(lol|leagueoflegends)(?!.)/g
         const sc2Regex = /(?<!.)((starcraft|sc)[-—:_\/]2|(starcraft|sc)(2|))(?!.)/g
         const overwatchRegex = /(?<!.)(ow|overwatch)(?!.)/g
-				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_\/]6[-—:_\/]siege)(?!.)/g
+				const rainbow6Regex = /(?<!.)(r6|rainbow6|rainbow6siege|rainbow[-—:_\/]6[-—:_\/]siege|rainbow[-—:_\/](six|6))(?!.)/g
 				const callofdutyRegex = /(?<!.)(callofduty|cod)(?!.)|(call|c)[-—:_\/](of|o)[-—:_\/](duty|d)/g
 				const rocketLeagueRegex = /(?<!.)(rocketleague)(?!.)/g
 
@@ -124,7 +124,7 @@ export default class BaseCrawler {
 		 */
 		formatOdds = (rawOdd: any):number => { //add a lot of unit tests
 			if(rawOdd === '' )
-				throw 'odds pattern was unrecognized'
+				throw 'odds pattern was unrecognized (empty string)'
 
 			let parsedOdd: number
 
@@ -138,6 +138,21 @@ export default class BaseCrawler {
 			if(isNaN(parsedOdd)) throw 'odd pattern was unrecognized & could not convert to number'
 
 			return parsedOdd
+		}
+
+		/**
+		 * formats all the odds of an array of BetData objects
+		 * @param bets 
+		 */
+		formatAllMarketOdds (bets:Array<BetData>,parentUuid:string):Array<BetData> {
+			return bets.map((element: any) => {
+				return {
+					teamKey: element.teamKey, 
+					betName: element.betName,
+					parentUuid: parentUuid,
+					odds: this.formatOdds(element.odds)
+				}
+			});
 		}
 
 		/**

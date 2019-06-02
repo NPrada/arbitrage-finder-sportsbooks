@@ -26,3 +26,7 @@ Solution --> https://stackoverflow.com/a/40350534/4704145
 - Run `npm install`
 - Run `npm run testdeployment` you should get an email
 - Run `npm run deploy`
+
+### TODO
+- https://github.com/GoogleChrome/puppeteer/issues/3443#issuecomment-433096772
+- do not match games on the same sportsbook

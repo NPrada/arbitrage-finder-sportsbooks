@@ -32,7 +32,7 @@ class SkyBetCrawler extends BaseCrawler {
       }
   
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
-      console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
+      console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList;
     }catch(err){
       console.log('BLOCKING ERROR')

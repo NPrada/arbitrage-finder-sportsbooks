@@ -11,17 +11,19 @@ class EGBCrawler extends BaseCrawler {
   baseURL = 'https://egb.com'
 
   run = async ():Promise<Array<ParsedGameData>> => {
+		let browser = null
     try{
 			const startTime = process.hrtime()
-
-			const browser = await puppeteer.launch();
+			//prepping puppeteer browser
+			browser = await puppeteer.launch({args: ['--no-sandbox']});
 			const page = await browser.newPage();
+			await page.setUserAgent(this.fakeUA())
+			await page.setViewport({width: 1500, height:2500})
+
+
       await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
-      await page.setUserAgent(this.fakeUA())
-      await page.setViewport({width: 1500, height:2500})
-      
+     
 			await page.waitForSelector("#app")
-			await page.screenshot({path: 'egb-state1.png'});
 			let allDom = await page.evaluate(() => {
         if(document !== null && document.getElementById("app") !== null) {         
           return document.getElementById("app")!.innerHTML
@@ -49,13 +51,15 @@ class EGBCrawler extends BaseCrawler {
       const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			if(!matchDataList.length) {
 				logHtml(allDom)
-				await page.screenshot({path: 'egb-state2.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
-			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} matches`)
+			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
 			console.log("CRITICAL ERROR:",err)
+			if (!isNil(browser)) {
+				await browser.close()
+			} 
 			return []
 		}
   }
@@ -103,14 +107,7 @@ class EGBCrawler extends BaseCrawler {
 			}
 			
 			//format all the bets odds in the outright market
-			const outrightBets = rawRowData.markets.outright.bets.map((element: any) => {
-				return {
-					teamKey: element.teamKey, 
-					betName: element.betName,
-					parentUuid: uuid,
-					odds: this.formatOdds(element.odds)
-				}
-			});
+			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright.bets,uuid)
 			
 			//parse & format the date
 			let formattedDate: string

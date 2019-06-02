@@ -2,7 +2,6 @@ import {SportBookIds, ParsedGameData, BetData} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import includes from 'lodash/includes'
 import { logJson } from "./crawlers/resources/helpers";
-import  fs  from "fs";
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import filter from 'lodash/filter'
@@ -23,15 +22,6 @@ type GameMatchedData = {
 	team1Name: string,
 	team2Name: string
 	matches: Array<{sportbookId: SportBookIds, uuid: string}>
-	// betsData:{
-	// 	[key in SportBookIds]: {	
-	// 		markets: {
-	// 			[marketName in MarketNames]: {
-	// 				bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
-	// 			} 
-	// 		}
-	// 	}
-	// }
 }
 
 type DataDictionary = {
@@ -67,7 +57,7 @@ export default class ArbSearch {
 			
 		const gameDataDictionary:DataDictionary = {}
 		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
-
+		
 		sportBookIds.map(sportKey => {
 			this.allGamesCrawled[sportKey].map( (gameData:ParsedGameData) => {
 				gameDataDictionary[gameData.uuid] = gameData 
@@ -139,12 +129,11 @@ export default class ArbSearch {
 		const filteredMatchContainers: Array<GameMatchedData> = filter(gameMatchContainers, (container:GameMatchedData) => {
 			return container.matches.length > 1
 		})
-		
 
-		//error checking
-		if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
-			console.log('(arbSearch) Error: Something does not add up')
-		}
+		// FIXME: error checking
+		// if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
+		// 	console.log('(arbSearch) Error: Something does not add up maybe')
+		// }
 
 		//start the part where we get the profitability of each match we found
 		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
