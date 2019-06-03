@@ -37,7 +37,7 @@ class EGBCrawler extends BaseCrawler {
 			const $ = cheerio.load(allDom)
 			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
 			if (eventsTable === null){
-				await page.screenshot({path: 'egbError.png'});
+				await page.screenshot({path: 'egbError-didnt_find_table.png'});
 				throw `Error: could not find the table containing all the events`
 			}
 				
@@ -58,6 +58,7 @@ class EGBCrawler extends BaseCrawler {
 			})
 			if(!matchDataList.length) {
 				logHtml(allDom)
+				await page.screenshot({path: 'egbError-didnt_find_data.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
