@@ -75,8 +75,8 @@ export default class DataHandler {
 		dataCanBePutInContainer (gameData:ParsedGameData, gameMatchContainers:DataDictionary): string {
 			const containersUuids = keys(gameMatchContainers)
 			for(let i=0; i < containersUuids.length; i++){
-				for(let k=0; k < gameMatchContainers[containersUuids[i]].matches.length; k++){
-					const gameUuid = gameMatchContainers[containersUuids[i]].matches[k].uuid
+				for(let k=0; k < gameMatchContainers[containersUuids[i]].matchedGames.length; k++){
+					const gameUuid = gameMatchContainers[containersUuids[i]].matchedGames[k].uuid
 					if (this.isMatching(this.gameDataDictionary[gameUuid], gameData)) { //checks if its matching or not
 						return gameMatchContainers[containersUuids[i]].uuid
 					}
@@ -113,7 +113,7 @@ export default class DataHandler {
 				const matchedContainerId = this.dataCanBePutInContainer(gameData,gameContainersDictionary)
 				
 				if (!isNil(matchedContainerId) ) {
-					gameContainersDictionary[matchedContainerId].matches
+					gameContainersDictionary[matchedContainerId].matchedGames
 						.push({
 							sportbookId: gameData.sportbookId, 
 							uuid: gameData.uuid
