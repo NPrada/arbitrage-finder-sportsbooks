@@ -237,7 +237,6 @@ ${findingsString}`
 			console.log('-------------------------------------------')
 			console.log('gameData',gameData);
 			console.log('ERROR:'+ err);
-			
 		}
 	
 	}

@@ -73,12 +73,17 @@ export default class BetwayCrawler extends BaseCrawler {
 
 		await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+		this.crawlData.elapsedTime = Number(elapsedTime)
+		this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
+			return elem.uuid
+		})
 		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 		//logJson(matchDataList, 'betway')
 		return matchDataList;
 		}catch(err){
       console.log('BLOCKING ERROR')
 			console.log(err)
+			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
 			if (!isNil(browser)) {
 				await browser.close()
 			} 
@@ -188,8 +193,9 @@ export default class BetwayCrawler extends BaseCrawler {
 				markets: parsedMarkets
       }
 
-		}catch(e){
-			console.log('(betway) Non Blocking Error: ' + e)
+		}catch(err){
+			console.log('(betway) Non Blocking Error: ' + err)
+			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
       return null
 		}
 	}

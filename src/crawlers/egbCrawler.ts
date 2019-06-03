@@ -36,8 +36,11 @@ class EGBCrawler extends BaseCrawler {
 	
 			const $ = cheerio.load(allDom)
 			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
-			if (eventsTable === null)
+			if (eventsTable === null){
+				await page.screenshot({path: 'egbError.png'});
 				throw `Error: could not find the table containing all the events`
+			}
+				
 	
 			const matchDataList: Array<ParsedGameData> = []
 	
@@ -48,7 +51,11 @@ class EGBCrawler extends BaseCrawler {
 			}
 
 			await browser.close();
-      const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			this.crawlData.elapsedTime = Number(elapsedTime)
+			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
+				return elem.uuid
+			})
 			if(!matchDataList.length) {
 				logHtml(allDom)
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
@@ -56,7 +63,8 @@ class EGBCrawler extends BaseCrawler {
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
-			console.log("CRITICAL ERROR:",err)
+			console.log("BLOCKING ERROR:",err)
+			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
 			if (!isNil(browser)) {
 				await browser.close()
 			} 
@@ -137,8 +145,9 @@ class EGBCrawler extends BaseCrawler {
 				team2Name: rawRowData.team2Name,
 				markets: parsedMarkets
       }
-    }catch(e){ //logs an error and discards this gameData
-      console.log('(egb) Non Blocking Error: ' + e)
+    }catch(err){ //logs an error and discards this gameData
+			console.log('(egb) Non Blocking Error: ' + err)
+			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
       return null
     }
   }

@@ -30,12 +30,17 @@ class SkyBetCrawler extends BaseCrawler {
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
-  
-      const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			
+			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			this.crawlData.elapsedTime = Number(elapsedTime)
+			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
+				return elem.uuid
+			})
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList;
     }catch(err){
-      console.log('BLOCKING ERROR')
+			console.log('BLOCKING ERROR')
+			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
       console.log(err)
       return []
     }
@@ -177,9 +182,10 @@ class SkyBetCrawler extends BaseCrawler {
 				team2Name: this.getRegexSubstr(rawRowData.team2Name, team2regx),
 				markets: parsedMarkets
       }
-    }catch(e){
+    }catch(err){
       
-      console.log('(sky) Non Blocking Error:',e)
+			console.log('(sky) Non Blocking Error:',err)
+			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
       return null
     }
   }

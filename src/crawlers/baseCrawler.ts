@@ -1,10 +1,12 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
+import date from 'date-and-time'
 import { type } from 'os';
 
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb' | 'betway'
+export type ErrorSeverityLevels = 'CRITICAL' | 'NON_BLOCKING' 
 
 export type RawBetData = {teamKey: 0|1|2, betName: string , odds: number | string}
 export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number} //teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
@@ -42,13 +44,28 @@ export interface ParsedGameData {
 	error?: string 
 }
 
-
+export interface CrawlerMetadata {
+	sportbookId: SportBookIds
+	startDate: string
+	elapsedTime: number
+	gamesFound: Array<String>
+	errors: Array<{severity: ErrorSeverityLevels, message: string}>
+}
 
 export default class BaseCrawler {
-
+		crawlData: CrawlerMetadata
     sportbookId: SportBookIds
     constructor(sportbookId: SportBookIds, ) {
-        this.sportbookId = sportbookId
+				this.sportbookId = sportbookId
+				let now = new Date()
+				this.crawlData = {
+					sportbookId: sportbookId,
+					startDate: date.format(now,'YYYY-MM-DD HH:mm:ss'),
+					elapsedTime: 0,
+					gamesFound: [],
+					errors: []
+					
+				}
     }
 
 		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promise so we can just use await
@@ -189,14 +206,22 @@ export default class BaseCrawler {
             }
         })
         return allDom
-    }
-
+		}
+		
+		/**
+		 * return the crawl data that was we wrote so far
+		 *
+		 * @memberof BaseCrawler
+		*/
+		getCrawlMetadata () {
+			return this.crawlData
+		}
 
     /**
 		 * applies a regex to a string and throws an error if it fails in some way
 		 *
 		 * @memberof BaseCrawler
-		 */
+		*/
 		getRegexSubstr = (string: string, regex: RegExp):string => {
         if (string === '') throw ' getRegexSubstr() the string we are ment to match with is blank';
 
