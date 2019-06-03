@@ -46,16 +46,16 @@ export interface ParsedGameData {
 
 export default class BaseCrawler {
 
-    sportBookId: SportBookIds
-    constructor(sportBookId: SportBookIds, ) {
-        this.sportBookId = sportBookId
+    sportbookId: SportBookIds
+    constructor(sportbookId: SportBookIds, ) {
+        this.sportbookId = sportbookId
     }
 
 		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promise so we can just use await
     
     initializeEventData = (): RawGameData => {
 			return {
-				sportbookId: this.sportBookId,
+				sportbookId: this.sportbookId,
 				competitionName: null,
 				sportName: null,
 				date: null,

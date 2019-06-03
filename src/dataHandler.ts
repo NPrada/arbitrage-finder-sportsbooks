@@ -21,7 +21,7 @@ type GameDataContainer = {
 	date: string,
 	team1Name: string,
 	team2Name: string
-	matches: Array<{sportbookId: SportBookIds, uuid: string}>
+	matchedGames: Array<{sportbookId: SportBookIds, uuid: string}>
 }
 
 type DataDictionary = {
@@ -56,9 +56,9 @@ export default class DataHandler {
 	transformToObjectList (FullMatchData:FullMatchData): DataDictionary {
 			
 		const gameDataDictionary:DataDictionary = {}
-		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
+		const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
 		
-		sportBookIds.map(sportKey => {
+		sportbookIds.map(sportKey => {
 			this.allGamesCrawled[sportKey].map( (gameData:ParsedGameData) => {
 				gameDataDictionary[gameData.uuid] = gameData 
 			})
@@ -105,17 +105,17 @@ export default class DataHandler {
 	
 	matchGames () {
 		
-		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
+		const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
 		const gameContainersDictionary: DataDictionary = {}
 
-		sportBookIds.map(sportBookId => {
-			this.allGamesCrawled[sportBookId].map( (gameData:ParsedGameData) => {
+		sportbookIds.map(sportbookId => {
+			this.allGamesCrawled[sportbookId].map( (gameData:ParsedGameData) => {
 				const matchedContainerId = this.dataCanBePutInContainer(gameData,gameContainersDictionary)
 				
 				if (!isNil(matchedContainerId) ) {
 					gameContainersDictionary[matchedContainerId].matches
 						.push({
-							sportBookId: gameData.sportbookId, 
+							sportbookId: gameData.sportbookId, 
 							uuid: gameData.uuid
 						})
 				} else {
