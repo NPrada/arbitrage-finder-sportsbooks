@@ -97,7 +97,7 @@ export default class DataHandler {
 				date: gameData1.date,
 				team1Name: gameData1.team1Name,
 				team2Name: gameData1.team2Name,
-				matches: [
+				matchedGames: [
 					{sportbookId:gameData1.sportbookId, uuid: gameData1.uuid},
 				]
 			}
@@ -132,14 +132,14 @@ export default class DataHandler {
 
 		//filter the containers to only the ones we have matches for
 		const filteredMatchContainers: Array<GameDataContainer> = filter(gameContainersDictionary, (container:GameDataContainer) => {
-			return container.matches.length > 1
+			return container.matchedGames.length > 1
 		})
 
 		//start the part where we get the profitability of each match we found
 		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
 
 		filteredMatchContainers.forEach((container:GameDataContainer) => {
-			const gameDatasArr: Array<ParsedGameData> = container.matches.map(gameData => {
+			const gameDatasArr: Array<ParsedGameData> = container.matchedGames.map(gameData => {
 				return this.gameDataDictionary[gameData.uuid]
 			});
 			
