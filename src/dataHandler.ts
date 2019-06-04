@@ -1,4 +1,4 @@
-import {SportBookIds, ParsedGameData, BetData, MarketNames} from './crawlers/baseCrawler';
+import {SportBookIds, ParsedGameData, BetData, MarketNames, CrawlerMetadata} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import includes from 'lodash/includes'
 import { findMarketObject, logJson } from "./crawlers/resources/helpers";
@@ -9,6 +9,12 @@ import find from 'lodash/find'
 import maxBy from 'lodash/maxBy'
 import uniqid  from "uniqid";
 import { log } from 'util';
+
+export type FullCrawlObject = {
+		date: string, //TODO remove not needed here
+		crawlersData: Array<CrawlerMetadata>,
+		matchContainers: Array<String>
+}
 
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
