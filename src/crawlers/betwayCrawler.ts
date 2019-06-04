@@ -232,7 +232,7 @@ export default class BetwayCrawler extends BaseCrawler {
 	 */
 	getDom = async (page:Page, url:string):Promise<string> => {
 		
-		await page.goto(url, { waitUntil: 'networkidle0' });
+		await page.goto(url, { waitUntil: 'networkidle0', timeout: 150000 });
 	
 		let buttonsNum = 0;
 		do{
