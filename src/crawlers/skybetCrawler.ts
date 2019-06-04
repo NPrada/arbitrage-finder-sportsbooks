@@ -2,7 +2,7 @@ import cheerio from 'cheerio'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
 import random from 'lodash/random'
-import BaseCrawler, { RawGameData ,ParsedGameData } from './baseCrawler';
+import BaseCrawler, { RawGameData ,ParsedGameData,MarketData, RawMarketData } from './baseCrawler';
 import {parseHrtimeToSeconds} from './resources/helpers'
 import uniqid from 'uniqid'
 
@@ -30,12 +30,17 @@ class SkyBetCrawler extends BaseCrawler {
       for (let i = 0; i < allDayTables.length; i++) {
         matchDataList.push(...this.getMatchDataFromDayTable(allDayTables.eq(i).html()))
       }
-  
-      const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			
+			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			this.crawlData.elapsedTime = Number(elapsedTime)
+			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
+				return elem.uuid
+			})
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList;
     }catch(err){
-      console.log('BLOCKING ERROR')
+			console.log('BLOCKING ERROR')
+			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
       console.log(err)
       return []
     }
@@ -111,11 +116,15 @@ class SkyBetCrawler extends BaseCrawler {
 				rawMatchData.pageHref = this.baseURL + matchHref
 				rawMatchData.team1Name = matchNameString 	// eg:'Infinity eSports v Pixel Esports Club (Bo1)'
 				rawMatchData.team2Name = matchNameString	// eg:'Infinity eSports v Pixel Esports Club (Bo1)'
-				rawMatchData.markets = {outright: {bets: [
-					{teamKey: 1, betName: 'win', odds: odds1},
-					{teamKey: 2, betName: 'win', odds: odds2},
-				]}}
-         
+				rawMatchData.markets = []
+				rawMatchData.markets.push({
+					marketName: 'outright',
+					bets:	[
+						{teamKey: 1, betName: 'win', odds: odds1},
+						{teamKey: 2, betName: 'win', odds: odds2},
+					]
+				})
+					
         const parsedRowData = this.parseRawData(rawMatchData, {date: date})
         
         if(parsedRowData !== null) data.push(parsedRowData)
@@ -154,14 +163,14 @@ class SkyBetCrawler extends BaseCrawler {
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
 			} else throw 'Problem parsing the date'
 			
-			const outrightBets = rawRowData.markets.outright.bets.map((element: any) => {
-				return {
-					teamKey: element.teamKey, 
-					betName: element.betName,
-					parentUuid: uuid,
-					odds: this.formatOdds(element.odds)
+			//format all the bets odds in the markets
+			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
+				const parsedMarketData: MarketData = {
+					...elem,
+					bets: this.formatAllMarketOdds(elem.bets, uuid)
 				}
-			});
+				return parsedMarketData
+			})
 											
       return {
 				uuid: uuid,
@@ -172,11 +181,12 @@ class SkyBetCrawler extends BaseCrawler {
 				sportName: this.standardiseSportName(this.getRegexSubstr(rawRowData.sportName, sportNameRegx)), 
 				team1Name: this.getRegexSubstr(rawRowData.team1Name, team1regx),
 				team2Name: this.getRegexSubstr(rawRowData.team2Name, team2regx),
-				markets: {outright: {bets: outrightBets}}
+				markets: parsedMarkets
       }
-    }catch(e){
+    }catch(err){
       
-      console.log('(sky) Non Blocking Error:',e)
+			console.log('(sky) Non Blocking Error:',err)
+			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
       return null
     }
   }

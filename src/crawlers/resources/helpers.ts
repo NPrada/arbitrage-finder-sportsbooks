@@ -1,5 +1,6 @@
 import fs from 'fs'
 import {Page} from 'puppeteer'
+import {MarketNames} from '../baseCrawler'
 
 //just a helper if you want to log out html to a file for debugging purposes
 export const logHtml = (html: string | null | undefined) => {
@@ -41,6 +42,13 @@ export function getJsonFromFile (path: string): Object{
 export function parseHrtimeToSeconds(hrtime: Array<number>) {
     var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
     return seconds;
+}
+
+//finds the market data out of the array of markets available
+export function findMarketObject (marketName: MarketNames, marketsArr: Array<any>) {
+	return marketsArr.find( (elem: any): boolean => {
+		return elem.marketName === marketName
+	});
 }
 
 /**

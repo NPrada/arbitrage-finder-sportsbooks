@@ -1,10 +1,18 @@
 import request from 'request-promise-native'
 import { UAs } from './resources/useragentList'
+import date from 'date-and-time'
 import { type } from 'os';
 
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb' | 'betway'
+export type ErrorSeverityLevels = 'CRITICAL' | 'NON_BLOCKING' 
+
+export type RawBetData = {teamKey: 0|1|2, betName: string , odds: number | string}
+export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number} //teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
+
+export type RawMarketData = {marketName: MarketNames, bets: Array<RawBetData>}
+export type MarketData = {marketName: MarketNames, bets: Array<BetData>}
 
 export interface RawGameData {
 	sportbookId: SportBookIds
@@ -13,18 +21,13 @@ export interface RawGameData {
 	date: string | null
 	team1Name: string | null
 	team2Name: string | null
-	markets: {
-		[marketName in MarketNames]: {
-			bets: Array<{teamKey: 0|1|2, betName: string , odds: number | string}>
-		} | null
-	} | any
+	markets: Array<RawMarketData>
 	matchType?: string | null
 	pageHref?: string | null
 	error?: string | null
 }
 
-//teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
-export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number}
+
 
 export interface ParsedGameData { 
 	parentMatchesdId: string | null,
@@ -35,36 +38,45 @@ export interface ParsedGameData {
 	date: string 
 	team1Name: string
 	team2Name: string
-	markets: {
-		[marketName in MarketNames]: {
-			bets: Array<BetData> 
-		}
-	}
+	markets: Array<MarketData>
 	matchType?: string 
 	pageHref?: string
 	error?: string 
 }
 
-
+export interface CrawlerMetadata {
+	sportbookId: SportBookIds
+	startDate: string
+	elapsedTime: number
+	gamesFound: Array<String>
+	errors: Array<{severity: ErrorSeverityLevels, message: string}>
+}
 
 export default class BaseCrawler {
-
-    sportBookId: SportBookIds
-    constructor(sportBookId: SportBookIds, ) {
-        this.sportBookId = sportBookId
+		crawlData: CrawlerMetadata
+    sportbookId: SportBookIds
+    constructor(sportbookId: SportBookIds, ) {
+				this.sportbookId = sportbookId
+				this.crawlData = {
+					sportbookId: sportbookId,
+					startDate: date.format(new Date(),'YYYY-MM-DD HH:mm:ss'),
+					elapsedTime: 0,
+					gamesFound: [],
+					errors: []
+				}
     }
 
 		sleep = require('util').promisify(setTimeout) //makes setTimeout return a promise so we can just use await
     
     initializeEventData = (): RawGameData => {
 			return {
-				sportbookId: this.sportBookId,
+				sportbookId: this.sportbookId,
 				competitionName: null,
 				sportName: null,
 				date: null,
 				team1Name: null,
 				team2Name: null,
-				markets: {}
+				markets: []
 			}
     }
 		
@@ -144,7 +156,8 @@ export default class BaseCrawler {
 		 * formats all the odds of an array of BetData objects
 		 * @param bets 
 		 */
-		formatAllMarketOdds (bets:Array<BetData>,parentUuid:string):Array<BetData> {
+		formatAllMarketOdds (bets:Array<RawBetData>,parentUuid:string):Array<BetData> { //FIXME: is parentUuid needed?
+			
 			return bets.map((element: any) => {
 				return {
 					teamKey: element.teamKey, 
@@ -191,14 +204,22 @@ export default class BaseCrawler {
             }
         })
         return allDom
-    }
-
+		}
+		
+		/**
+		 * return the crawl data that was we wrote so far
+		 *
+		 * @memberof BaseCrawler
+		*/
+		getCrawlMetadata () {
+			return this.crawlData
+		}
 
     /**
 		 * applies a regex to a string and throws an error if it fails in some way
 		 *
 		 * @memberof BaseCrawler
-		 */
+		*/
 		getRegexSubstr = (string: string, regex: RegExp):string => {
         if (string === '') throw ' getRegexSubstr() the string we are ment to match with is blank';
 
@@ -207,5 +228,15 @@ export default class BaseCrawler {
         } else {
             throw `at getRegexSubstr() some error with finding the substring using ${regex} on ${string}`;
         }
-    }
+		}
+
+		getTeamKey (index: number): 0 | 1 | 2 {
+			let teamKey: 0 | 1 | 2 = 1
+			if (index === 1)
+				teamKey = 1
+			else if (index === 2)
+				teamKey = 2
+
+			return teamKey
+		}
 }

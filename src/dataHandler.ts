@@ -1,7 +1,7 @@
-import {SportBookIds, ParsedGameData, BetData} from './crawlers/baseCrawler';
+import {SportBookIds, ParsedGameData, BetData, MarketNames, CrawlerMetadata} from './crawlers/baseCrawler';
 import date from 'date-and-time'
 import includes from 'lodash/includes'
-import { logJson } from "./crawlers/resources/helpers";
+import { findMarketObject, logJson } from "./crawlers/resources/helpers";
 import keys from 'lodash/keys'
 import isNil from 'lodash/isNil'
 import filter from 'lodash/filter'
@@ -10,18 +10,24 @@ import maxBy from 'lodash/maxBy'
 import uniqid  from "uniqid";
 import { log } from 'util';
 
+export type FullCrawlObject = {
+		date: string, //TODO remove not needed here
+		crawlersData: Array<CrawlerMetadata>,
+		matchContainers: Array<String>
+}
+
 export type FullMatchData = {
   [key in SportBookIds]: Array<ParsedGameData>;
 }; 
 
-type GameMatchedData = {
+type GameDataContainer = {
 	uuid: string,
 	sportName: string,
 	competitionName: string,
 	date: string,
 	team1Name: string,
 	team2Name: string
-	matches: Array<{sportbookId: SportBookIds, uuid: string}>
+	matchedGames: Array<{sportbookId: SportBookIds, uuid: string}>
 }
 
 type DataDictionary = {
@@ -36,7 +42,7 @@ type BetStats = {
 	bet2: { odd: number, stake: number }
 }
 
-export default class ArbSearch {
+export default class DataHandler {
 
   allGamesCrawled: FullMatchData
 	gameDataDictionary: DataDictionary //this is just a const with a list to all the indivitual crawled game data keyd by id
@@ -56,9 +62,9 @@ export default class ArbSearch {
 	transformToObjectList (FullMatchData:FullMatchData): DataDictionary {
 			
 		const gameDataDictionary:DataDictionary = {}
-		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
+		const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
 		
-		sportBookIds.map(sportKey => {
+		sportbookIds.map(sportKey => {
 			this.allGamesCrawled[sportKey].map( (gameData:ParsedGameData) => {
 				gameDataDictionary[gameData.uuid] = gameData 
 			})
@@ -75,8 +81,8 @@ export default class ArbSearch {
 		dataCanBePutInContainer (gameData:ParsedGameData, gameMatchContainers:DataDictionary): string {
 			const containersUuids = keys(gameMatchContainers)
 			for(let i=0; i < containersUuids.length; i++){
-				for(let k=0; k < gameMatchContainers[containersUuids[i]].matches.length; k++){
-					const gameUuid = gameMatchContainers[containersUuids[i]].matches[k].uuid
+				for(let k=0; k < gameMatchContainers[containersUuids[i]].matchedGames.length; k++){
+					const gameUuid = gameMatchContainers[containersUuids[i]].matchedGames[k].uuid
 					if (this.isMatching(this.gameDataDictionary[gameUuid], gameData)) { //checks if its matching or not
 						return gameMatchContainers[containersUuids[i]].uuid
 					}
@@ -89,7 +95,7 @@ export default class ArbSearch {
 		 * function to create a new blank container with whatever data we need in it
 		 * @param gameData1 
 		 */
-		makeGameMatchContainer (gameData1:ParsedGameData):GameMatchedData {
+		makeGameMatchContainer (gameData1:ParsedGameData):GameDataContainer {
 			return {
 				uuid: uniqid(),
 				sportName: gameData1.sportName,
@@ -97,49 +103,49 @@ export default class ArbSearch {
 				date: gameData1.date,
 				team1Name: gameData1.team1Name,
 				team2Name: gameData1.team2Name,
-				matches: [
+				matchedGames: [
 					{sportbookId:gameData1.sportbookId, uuid: gameData1.uuid},
 				]
 			}
 		}
 	
-	search () {
+	matchGames () {
 		
-		const sportBookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
-		const gameMatchContainers: DataDictionary = {}
+		const sportbookIds: Array<SportBookIds> = keys(this.allGamesCrawled)  as Array<SportBookIds>
+		const gameContainersDictionary: DataDictionary = {}
 
-		sportBookIds.map(sportBookId => {
-			this.allGamesCrawled[sportBookId].map( (gameData:ParsedGameData) => {
-				const matchedContainerId = this.dataCanBePutInContainer(gameData,gameMatchContainers)
+		sportbookIds.map(sportbookId => {
+			this.allGamesCrawled[sportbookId].map( (gameData:ParsedGameData) => {
+				const matchedContainerId = this.dataCanBePutInContainer(gameData,gameContainersDictionary)
 				
 				if (!isNil(matchedContainerId) ) {
-					gameMatchContainers[matchedContainerId].matches
+					gameContainersDictionary[matchedContainerId].matchedGames
 						.push({
-							sportBookId: gameData.sportbookId, 
+							sportbookId: gameData.sportbookId, 
 							uuid: gameData.uuid
 						})
 				} else {
 					const newMatchContainer = this.makeGameMatchContainer(gameData)
-					gameMatchContainers[newMatchContainer.uuid] = newMatchContainer
+					gameContainersDictionary[newMatchContainer.uuid] = newMatchContainer
 				}
 			})
 		})
 
-		//filter the containers to only the ones we have matches for
-		const filteredMatchContainers: Array<GameMatchedData> = filter(gameMatchContainers, (container:GameMatchedData) => {
-			return container.matches.length > 1
-		})
+		return gameContainersDictionary
+	}
 
-		// FIXME: error checking
-		// if(keys(gameMatchContainers).length + filteredMatchContainers.length !== keys(this.gameDataDictionary).length){
-		// 	console.log('(arbSearch) Error: Something does not add up maybe')
-		// }
+	getProfitability(gameContainersDictionary: DataDictionary){
+
+		//filter the containers to only the ones we have matches for
+		const filteredMatchContainers: Array<GameDataContainer> = filter(gameContainersDictionary, (container:GameDataContainer) => {
+			return container.matchedGames.length > 1
+		})
 
 		//start the part where we get the profitability of each match we found
 		let profitMargins: Array<{market1: ParsedGameData, market2: ParsedGameData, profitInfo:BetStats }> = []
 
-		filteredMatchContainers.forEach((container:GameMatchedData) => {
-			const gameDatasArr: Array<ParsedGameData> = container.matches.map(gameData => {
+		filteredMatchContainers.forEach((container:GameDataContainer) => {
+			const gameDatasArr: Array<ParsedGameData> = container.matchedGames.map(gameData => {
 				return this.gameDataDictionary[gameData.uuid]
 			});
 			
@@ -214,22 +220,29 @@ export default class ArbSearch {
 		})
 		
 		if(smallerResList === null) smallerResList = 0
-		let now = new Date();
-		date.format(now, 'YYYY/MM/DD HH:mm:ss');	
 
 		const matchPercentage = Math.round((matchesFound.length / smallerResList)*10000)/100
-		return `Ran the crawl task at ${date.format(now, 'YYYY/MM/DD HH:mm:ss')}
+		return `Ran the crawl task at ${date.format(new Date(), 'YYYY/MM/DD HH:mm:ss')}
 Out of ${smallerResList} games on ${smallerSportsbook} we found ${matchesFound.length} matches ~${matchPercentage}%.
 ${countProfitable} were profitable arbitrages.
 ${findingsString}`
 	}
 	
 	//gets the outright bet of the teamName that was passed in
-	getOutrightBetByTeamName (gameData: ParsedGameData, teamName: string): BetData {
-		const teamKey = this.isTeamNameMatching(gameData.team1Name,teamName)? 1 : 2;
-		return find(gameData.markets.outright.bets, (bet) => {
-			return bet.teamKey === teamKey
-		})
+	getOutrightBetByTeamName (gameData: ParsedGameData, teamName: string, marketName: MarketNames = 'outright'): BetData {
+		try {
+			const marketData = findMarketObject(marketName, gameData.markets)
+			const teamKey = this.isTeamNameMatching(gameData.team1Name,teamName)? 1 : 2;
+			return find(marketData.bets, (bet) => {
+				return bet.teamKey === teamKey
+			})
+		}
+		catch(err){
+			console.log('-------------------------------------------')
+			console.log('gameData',gameData);
+			console.log('ERROR:'+ err);
+		}
+	
 	}
 
 
@@ -243,8 +256,6 @@ ${findingsString}`
 			return true
 		else
 			return false
-		
-
 		
 		//simply checks if the two string are the same
 		function matchFullString(name1:string,name2:string):boolean{

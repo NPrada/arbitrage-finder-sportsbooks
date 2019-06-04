@@ -2,7 +2,7 @@ import cheerio from 'cheerio'
 import puppeteer from 'puppeteer'
 import date from 'date-and-time'
 import isNil from 'lodash/isNil'
-import BaseCrawler, {RawGameData, ParsedGameData} from './baseCrawler';
+import BaseCrawler, {RawGameData, ParsedGameData, MarketData, RawMarketData} from './baseCrawler';
 import { parseHrtimeToSeconds, logHtml } from './resources/helpers'
 import uniqid from 'uniqid'
 
@@ -36,8 +36,11 @@ class EGBCrawler extends BaseCrawler {
 	
 			const $ = cheerio.load(allDom)
 			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
-			if (eventsTable === null)
+			if (eventsTable === null){
+				await page.screenshot({path: 'egbError-didnt_find_table.png'});
 				throw `Error: could not find the table containing all the events`
+			}
+				
 	
 			const matchDataList: Array<ParsedGameData> = []
 	
@@ -48,15 +51,21 @@ class EGBCrawler extends BaseCrawler {
 			}
 
 			await browser.close();
-      const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
+			this.crawlData.elapsedTime = Number(elapsedTime)
+			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
+				return elem.uuid
+			})
 			if(!matchDataList.length) {
 				logHtml(allDom)
+				await page.screenshot({path: 'egbError-didnt_find_data.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
-			console.log("CRITICAL ERROR:",err)
+			console.log("BLOCKING ERROR:",err)
+			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
 			if (!isNil(browser)) {
 				await browser.close()
 			} 
@@ -83,11 +92,14 @@ class EGBCrawler extends BaseCrawler {
     matchData.competitionName = tableRow.find("div[itemprop='location'] > [itemprop='name']").attr('content')
     matchData.team1Name = tableRow.find('.table-bets__player1 > span').attr('title')
 		matchData.team2Name = tableRow.find('.table-bets__player2 > span').attr('title')
-		matchData.markets = { outright:{ bets: []} }
-		matchData.markets.outright.bets = [
-			{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},
-			{teamKey:2, betName: 'win', odds: tableRow.find('.table-bets__col-3').find('.bet-rate').text()}
-		]
+		matchData.markets = []
+		matchData.markets.push({
+			marketName: 'outright',
+			bets: [
+				{teamKey:1, betName: 'win', odds: tableRow.find('.table-bets__col-1').find('.bet-rate').text()},
+				{teamKey:2, betName: 'win', odds: tableRow.find('.table-bets__col-3').find('.bet-rate').text()}
+			]
+		})
 
     //TODO add puppeteer click on row and get url since its just clientside 
 
@@ -106,8 +118,14 @@ class EGBCrawler extends BaseCrawler {
 				throw rawDataError
 			}
 			
-			//format all the bets odds in the outright market
-			const outrightBets = this.formatAllMarketOdds(rawRowData.markets.outright.bets,uuid)
+			//format all the bets odds in the markets
+			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
+				const parsedMarketData: MarketData = {
+					...elem,
+					bets: this.formatAllMarketOdds(elem.bets, uuid)
+				}
+				return parsedMarketData
+			})
 			
 			//parse & format the date
 			let formattedDate: string
@@ -126,12 +144,11 @@ class EGBCrawler extends BaseCrawler {
 				date: formattedDate,
 				team1Name: rawRowData.team1Name,
 				team2Name: rawRowData.team2Name,
-				markets: { 
-					outright: {	bets:  outrightBets	}  
-				}
+				markets: parsedMarkets
       }
-    }catch(e){ //logs an error and discards this gameData
-      console.log('(egb) Non Blocking Error: ' + e)
+    }catch(err){ //logs an error and discards this gameData
+			console.log('(egb) Non Blocking Error: ' + err)
+			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
       return null
     }
   }
