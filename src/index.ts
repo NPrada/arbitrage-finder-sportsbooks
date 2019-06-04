@@ -46,7 +46,6 @@ const crawlerTask = async () => {
 		})
 	}
 
-	logJson(fullCrawlData,'fullCrawlData')
 	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')
 }
