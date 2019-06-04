@@ -57,14 +57,12 @@ export default class BaseCrawler {
     sportbookId: SportBookIds
     constructor(sportbookId: SportBookIds, ) {
 				this.sportbookId = sportbookId
-				let now = new Date()
 				this.crawlData = {
 					sportbookId: sportbookId,
-					startDate: date.format(now,'YYYY-MM-DD HH:mm:ss'),
+					startDate: date.format(new Date(),'YYYY-MM-DD HH:mm:ss'),
 					elapsedTime: 0,
 					gamesFound: [],
 					errors: []
-					
 				}
     }
 

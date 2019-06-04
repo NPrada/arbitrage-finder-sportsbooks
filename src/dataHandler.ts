@@ -220,11 +220,9 @@ export default class DataHandler {
 		})
 		
 		if(smallerResList === null) smallerResList = 0
-		let now = new Date();
-		date.format(now, 'YYYY/MM/DD HH:mm:ss');	
 
 		const matchPercentage = Math.round((matchesFound.length / smallerResList)*10000)/100
-		return `Ran the crawl task at ${date.format(now, 'YYYY/MM/DD HH:mm:ss')}
+		return `Ran the crawl task at ${date.format(new Date(), 'YYYY/MM/DD HH:mm:ss')}
 Out of ${smallerResList} games on ${smallerSportsbook} we found ${matchesFound.length} matches ~${matchPercentage}%.
 ${countProfitable} were profitable arbitrages.
 ${findingsString}`

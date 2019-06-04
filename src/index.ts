@@ -6,8 +6,10 @@
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
 import BetwayCrawler from './crawlers/betwayCrawler'
-import DataHandler from './dataHandler'
+import DataHandler, {FullCrawlObject} from './dataHandler'
+import { findMarketObject, logJson } from "./crawlers/resources/helpers";
 import sendMail from './emailer'
+import date from 'date-and-time'
 import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
 
@@ -26,12 +28,25 @@ const crawlerTask = async () => {
 	// waits for all functions to finish before continuing, done this way so they all run concurrently
 	const allResults = [await egbResults, await skyResults, await betwayResults]; 
 
-	const fullCrawlObject:any = {skybet: allResults[0], egb:allResults[1], betway: allResults[2]}
+	const allGamesCrawled:any = {skybet: allResults[0], egb:allResults[1], betway: allResults[2]}
 	
-	const arbFinder = new DataHandler(fullCrawlObject)
+	const arbFinder = new DataHandler(allGamesCrawled)
 	const allGameContainers = arbFinder.matchGames()
 	const findingsReport = arbFinder.getProfitability(allGameContainers)
 	
+ 	const fullCrawlData: FullCrawlObject = {
+		date: date.format(new Date(), 'YYYY/MM/DD HH:mm:ss'),
+		crawlersData: [
+			betwayCrawler.getCrawlMetadata(),
+			skyBetCrawler.getCrawlMetadata(),
+			egbCrawler.getCrawlMetadata()
+		],
+		matchContainers: Object.keys(allGameContainers).map((key) => {
+			return allGameContainers[key];
+		})
+	}
+
+	logJson(fullCrawlData,'fullCrawlData')
 	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')
 }
