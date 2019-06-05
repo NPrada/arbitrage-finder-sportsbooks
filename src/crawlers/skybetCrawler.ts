@@ -127,8 +127,9 @@ class SkyBetCrawler extends BaseCrawler {
         if(parsedRowData !== null) data.push(parsedRowData)
       }
     }
-    return data;
-    }
+		 
+		return data;
+  }
   
   parseRawData = (rawRowData: RawGameData, extraData: extraDataType): ParsedGameData | null => {
     try{
