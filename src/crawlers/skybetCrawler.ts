@@ -39,9 +39,7 @@ class SkyBetCrawler extends BaseCrawler {
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList;
     }catch(err){
-			console.log('BLOCKING ERROR')
-			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
-      console.log(err)
+			this.saveError(this.errorTypes.CRITICAL, err)
       return []
     }
   }
@@ -183,9 +181,7 @@ class SkyBetCrawler extends BaseCrawler {
 				markets: parsedMarkets
       }
     }catch(err){
-      
-			console.log('(sky) Non Blocking Error:',err)
-			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
+			this.saveError(this.errorTypes.NON_BLOCKING, err)
       return null
     }
   }

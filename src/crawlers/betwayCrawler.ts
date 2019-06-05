@@ -13,6 +13,7 @@ export default class BetwayCrawler extends BaseCrawler {
 
 	run = async ():Promise<Array<ParsedGameData>> => {
 		let browser = null
+		let page = null
 		try{
 			const startTime = process.hrtime()
 			
@@ -22,7 +23,7 @@ export default class BetwayCrawler extends BaseCrawler {
 				//headless: false,
 				//slowMo: 200
 			}); 
-			const page = await browser.newPage();
+			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
 
@@ -80,10 +81,10 @@ export default class BetwayCrawler extends BaseCrawler {
 		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 		//logJson(matchDataList, 'betway')
 		return matchDataList;
-		}catch(err){
-      console.log('BLOCKING ERROR')
-			console.log(err)
-			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
+		} catch(err) {
+
+			this.saveError(this.errorTypes.CRITICAL, err, page)
+      
 			if (!isNil(browser)) {
 				await browser.close()
 			} 
@@ -194,8 +195,7 @@ export default class BetwayCrawler extends BaseCrawler {
       }
 
 		}catch(err){
-			console.log('(betway) Non Blocking Error: ' + err)
-			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
+			this.saveError(this.errorTypes.NON_BLOCKING, err)
       return null
 		}
 	}
