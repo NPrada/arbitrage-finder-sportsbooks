@@ -21,7 +21,7 @@ class EGBCrawler extends BaseCrawler {
 			await page.setViewport({width: 1500, height:2500})
 
 
-      await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
+      await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
      
 			await page.waitForSelector("#app")
 			let allDom = await page.evaluate(() => {
@@ -58,6 +58,7 @@ class EGBCrawler extends BaseCrawler {
 			})
 			if(!matchDataList.length) {
 				logHtml(allDom)
+				await page.screenshot({path: 'egbError-didnt_find_data.png'});
 				await page.screenshot({path: 'egbError-didnt_find_data.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
