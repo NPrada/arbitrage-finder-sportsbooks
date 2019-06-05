@@ -11,7 +11,7 @@ import uniqid  from "uniqid";
 import { log } from 'util';
 
 export type FullCrawlObject = {
-		date: string, //TODO remove not needed here
+		crawlDate: string, //TODO remove not needed here
 		crawlersData: Array<CrawlerMetadata>,
 		matchContainers: Array<String>
 }
