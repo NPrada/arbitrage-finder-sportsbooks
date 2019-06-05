@@ -12,14 +12,14 @@ class EGBCrawler extends BaseCrawler {
 
   run = async ():Promise<Array<ParsedGameData>> => {
 		let browser = null
+		let page = null
     try{
 			const startTime = process.hrtime()
 			//prepping puppeteer browser
 			browser = await puppeteer.launch({args: ['--no-sandbox']});
-			const page = await browser.newPage();
+			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
-
 
       await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
      
@@ -30,14 +30,12 @@ class EGBCrawler extends BaseCrawler {
         }
       });
 
-
 			if (isNil(allDom) || allDom === '')
 				throw `${this.baseURL}/play/simple_bets got no dom`
-	
+			
 			const $ = cheerio.load(allDom)
 			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
 			if (eventsTable === null){
-				await page.screenshot({path: 'egbError-didnt_find_table.png'});
 				throw `Error: could not find the table containing all the events`
 			}
 				
@@ -58,15 +56,14 @@ class EGBCrawler extends BaseCrawler {
 			})
 			if(!matchDataList.length) {
 				logHtml(allDom)
-				await page.screenshot({path: 'egbError-didnt_find_data.png'});
-				await page.screenshot({path: 'egbError-didnt_find_data.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
-			console.log("BLOCKING ERROR:",err)
-			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
+
+			this.saveError(this.errorTypes.CRITICAL, err, page)
+			 
 			if (!isNil(browser)) {
 				await browser.close()
 			} 
@@ -148,8 +145,7 @@ class EGBCrawler extends BaseCrawler {
 				markets: parsedMarkets
       }
     }catch(err){ //logs an error and discards this gameData
-			console.log('(egb) Non Blocking Error: ' + err)
-			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
+			this.saveError(this.errorTypes.NON_BLOCKING, err)
       return null
     }
   }
