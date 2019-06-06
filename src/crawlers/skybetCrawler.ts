@@ -50,6 +50,7 @@ class SkyBetCrawler extends BaseCrawler {
       throw Error('getAllMatchesByDayPath got no table html to work with')
 
     const $ = cheerio.load(allDom);
+    
     const marketsListPath = $("#coupons", '#page-content')
 			 .find("[data-analytics='[Coupons]']").filter((_index,elem) => { 	//flexible way of find the button that says: "All Matches By Day" so the matching is not case sensitive
 				return ($(elem).find("div").text()

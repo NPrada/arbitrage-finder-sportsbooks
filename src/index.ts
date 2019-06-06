@@ -1,7 +1,5 @@
 //https://www.pinnacle.com/en/betting-resources/betting-tools/margin-calculator
 //https://www.pinnacle.com/en/betting-resources/betting-tools/arbitrage-calculator
-//https://developers.google.com/web/tools/puppeteer/get-started
-//https://molily.de/robust-javascript/#web-crawlers-without-javascript-support
 
 import EGBCrawler from './crawlers/egbCrawler'
 import SkyBetCrawler from './crawlers/skybetCrawler'
