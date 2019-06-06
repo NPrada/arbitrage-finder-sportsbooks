@@ -261,8 +261,15 @@ export default class BaseCrawler {
 	}
 
 
+	/**
+	 *
+	 * simple function used to make sure we only return valid keys 
+	 * @param {number} index
+	 * @returns {(0 | 1 | 2)}
+	 * @memberof BaseCrawler
+	 */
 	getTeamKey (index: number): 0 | 1 | 2 {
-		let teamKey: 0 | 1 | 2 = 1
+		let teamKey: 0 | 1 | 2 = 0
 		if (index === 1)
 			teamKey = 1
 		else if (index === 2)
