@@ -3,7 +3,7 @@ import { UAs } from './resources/useragentList'
 import date from 'date-and-time'
 import uniqid from 'uniqid'
 import isNil from 'lodash/isNil'
-
+import puppeteer, {Page} from 'puppeteer'
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb' | 'betway'
@@ -276,5 +276,30 @@ export default class BaseCrawler {
 			teamKey = 2
 
 		return teamKey
+	}
+
+
+	/**
+	 *
+	 * 
+	 * @param {*} domsGetter
+	 * @returns
+	 * @memberof BaseCrawler
+	 */
+	async runPuppeteer (domsGetter: (page:Page, browser:any,) => any){
+		let browser = null
+		let page = null
+		try{
+			browser = await puppeteer.launch({ignoreHTTPSErrors: true, args: ['--no-sandbox','--disable-setuid-sandbox']});
+			page = await browser.newPage();
+			await page.setUserAgent(this.fakeUA())
+			await page.setViewport({width: 1500, height:2500})
+			
+		 return await domsGetter(page, browser )
+		} catch(err) {
+
+			if (!isNil(browser)) await browser.close()
+			throw err
+		}
 	}
 }
