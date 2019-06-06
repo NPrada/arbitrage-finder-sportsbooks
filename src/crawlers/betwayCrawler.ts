@@ -20,7 +20,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			//prepping puppeteer browser
 			browser = await puppeteer.launch({
 				ignoreHTTPSErrors: true,
-				args: ['--no-sandbox'],
+				args: ['--no-sandbox', '--disable-setuid-sandbox'],
 				//headless: false,
 				//slowMo: 200
 			}); 
