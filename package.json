@@ -4,13 +4,13 @@
   "description": "find profitable arbitrages",
   "main": "src/index.js",
   "scripts": {
-		"docs": "typedoc --out docs src --theme minimal",
+    "docs": "typedoc --out docs src --theme minimal",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && echo typescript compiled successfully.. && cp package.json dist && cp package-lock.json dist && cp README.md dist",
     "start": "npm run build  && node dist/src/index.js",
-		"cron": "npm run build &&  node dist/src/cron.js && echo cron scheduler started..",
-		"testdeployment": "node src/index.js",
-		"deploy": "node src/cron.js && echo cron scheduler started..",
+    "cron": "npm run build &&  node dist/src/cron.js && echo cron scheduler started..",
+    "testdeployment": "node src/index.js",
+    "deploy": "node src/cron.js && echo cron scheduler started..",
     "server": "npm run build && node dist/src/server/server.js"
   },
   "repository": {

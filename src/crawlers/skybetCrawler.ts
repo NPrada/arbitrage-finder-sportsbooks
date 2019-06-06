@@ -33,9 +33,7 @@ class SkyBetCrawler extends BaseCrawler {
 			
 			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			this.crawlData.elapsedTime = Number(elapsedTime)
-			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
-				return elem.uuid
-			})
+			this.crawlData.gamesFound = matchDataList
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList;
     }catch(err){

@@ -49,7 +49,7 @@ export interface CrawlerMetadata {
 	sportbookId: SportBookIds
 	startDate: string
 	elapsedTime: number
-	gamesFound: Array<String>
+	gamesFound: Array<ParsedGameData>
 	errorsList: Array<{uuid: string, severity: ErrorSeverityLevels, message: string}>
 }
 

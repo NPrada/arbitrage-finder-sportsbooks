@@ -50,9 +50,7 @@ class EGBCrawler extends BaseCrawler {
 
 			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			this.crawlData.elapsedTime = Number(elapsedTime)
-			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
-				return elem.uuid
-			})
+			this.crawlData.gamesFound = matchDataList
 			if(!matchDataList.length) {
 				logHtml(allDom)
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
