@@ -21,7 +21,7 @@ class EGBCrawler extends BaseCrawler {
 				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
 				
 				await page.waitForSelector("#app")
-				return = await page.content()
+				return await page.content()
 				
 				// return await page.evaluate(() => {
 				// 	if(document !== null && document.getElementById("app") !== null) {         
