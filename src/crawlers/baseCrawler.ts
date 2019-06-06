@@ -252,7 +252,7 @@ export default class BaseCrawler {
 		} else {
 			builtMessage = `${severity} ERROR: ${message}}`
 		}
-		console.log(sportbookId + builtMessage)
+		console.log(`(${sportbookId}) ${builtMessage}`)
 		//take a screenshot 
 		if(severity === errorTypes.CRITICAL && !isNil(puppeteerPage))
 			await puppeteerPage.screenshot({path: `error-${errId}.png`});
