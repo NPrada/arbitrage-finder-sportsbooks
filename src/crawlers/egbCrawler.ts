@@ -15,22 +15,22 @@ class EGBCrawler extends BaseCrawler {
 		let page = null
     try{
 			const startTime = process.hrtime()
-			//prepping puppeteer browser
-			browser = await puppeteer.launch({args: ['--no-sandbox']});
-			page = await browser.newPage();
-			await page.setUserAgent(this.fakeUA())
-			await page.setViewport({width: 1500, height:2500})
 
-      await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
-     
-			await page.waitForSelector("#app")
-	    await page.screenshot({path: 'egbError-didnt_find_data.png'}); //TODO: Remove this dbugging thing
-			let allDom = await page.evaluate(() => {
-        if(document !== null && document.getElementById("app") !== null) {         
-          return document.getElementById("app")!.innerHTML
-        }
-      });
 
+			let allDom = await this.runPuppeteer(async (page, browser) => {
+				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
+				
+				await page.waitForSelector("#app")
+				return = await page.content()
+				
+				// return await page.evaluate(() => {
+				// 	if(document !== null && document.getElementById("app") !== null) {         
+				// 		return document.getElementById("app")!.innerHTML
+				// 	}
+				// });
+			})
+
+			
 			if (isNil(allDom) || allDom === '')
 				throw `${this.baseURL}/play/simple_bets got no dom`
 			
@@ -41,7 +41,6 @@ class EGBCrawler extends BaseCrawler {
 				throw `Error: could not find the table containing all the events`
 			}
 				
-	
 			const matchDataList: Array<ParsedGameData> = []
 	
 			for (let i = 0; i < eventsTable.length; i++) {
@@ -50,7 +49,6 @@ class EGBCrawler extends BaseCrawler {
         if (parsedData !== null) matchDataList.push(parsedData)
 			}
 
-			await browser.close();
 			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			this.crawlData.elapsedTime = Number(elapsedTime)
 			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
@@ -64,12 +62,7 @@ class EGBCrawler extends BaseCrawler {
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
-
 			this.saveError(this.errorTypes.CRITICAL, err, page)
-			 
-			if (!isNil(browser)) {
-				await browser.close()
-			} 
 			return []
 		}
   }

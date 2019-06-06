@@ -16,53 +16,47 @@ export default class BetwayCrawler extends BaseCrawler {
 		let page = null
 		try{
 			const startTime = process.hrtime()
-			
-			//prepping puppeteer browser
-			browser = await puppeteer.launch({
-				'args': ['--no-sandbox'],
-				//headless: false,
-				//slowMo: 200
-			}); 
-			page = await browser.newPage();
-			await page.setUserAgent(this.fakeUA())
-			await page.setViewport({width: 1500, height:2500})
 
-			const maxRequestDelay = 5;
-			const minRequestDelay = 1;
+			let allDoms = await this.runPuppeteer(async (page, browser) => {
+				const maxRequestDelay = 5;
+				const minRequestDelay = 1;
+				const allHtml:any = {}
+
+				allHtml.csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 12.5% crawling complete');
+				allHtml.lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 25% crawling complete');
+				allHtml.dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 37.5% crawling complete');
+				allHtml.rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 50% crawling complete');
+				allHtml.overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 62.5% crawling complete');
+				allHtml.sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 75% crawling complete');
+				allHtml.hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 87.5% crawling complete');
+				
+				return allHtml
+			})
 
 			const sportDaysLists = []
 
-			const csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 12.5% crawling complete');
-			const lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 25% crawling complete');
-			const dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 37.5% crawling complete');
-			const rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 50% crawling complete');
-			const overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 62.5% crawling complete');
-			const sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 75% crawling complete');
-			const hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 87.5% crawling complete');
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.csgoHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.lolHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.dota2Html))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.rainbowHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.overwatchHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.sc2Html))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.hearthsoneHtml))
 
-			sportDaysLists.push(this.getDaysTableCheerio(csgoHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(lolHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(dota2Html))
-			sportDaysLists.push(this.getDaysTableCheerio(rainbowHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(overwatchHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(sc2Html))
-			sportDaysLists.push(this.getDaysTableCheerio(hearthsoneHtml))
-
-		
 			const matchDataList: Array<ParsedGameData> = []
 			for (let k = 0; k < sportDaysLists.length; k++) {
 				const daysList = sportDaysLists[k];
@@ -71,23 +65,15 @@ export default class BetwayCrawler extends BaseCrawler {
 				}
 			}
 			
-
-		await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 		this.crawlData.elapsedTime = Number(elapsedTime)
 		this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
 			return elem.uuid
 		})
 		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
-		//logJson(matchDataList, 'betway')
 		return matchDataList;
 		} catch(err) {
-
 			this.saveError(this.errorTypes.CRITICAL, err, page)
-      
-			if (!isNil(browser)) {
-				await browser.close()
-			} 
       return []
     }	
 	}
@@ -121,9 +107,6 @@ export default class BetwayCrawler extends BaseCrawler {
 
 		return matchDataList
 	}
-
-
-
 
 	getRawRowData(tableRow: Cheerio, raw_SportAndTournamentNameAndDay:string):RawGameData {
 		const parsed_SportAndTournamentNameAndDay = raw_SportAndTournamentNameAndDay.split('_').filter(elem => elem !== 'esports')
@@ -235,16 +218,16 @@ export default class BetwayCrawler extends BaseCrawler {
 		await page.goto(url, { waitUntil: 'networkidle0', timeout: 150000 });
 	
 		let buttonsNum = 0;
-		do{
+		do {
 			const handles = await page.$$('.collapsableHeader[collapsed=true]');
 			buttonsNum = handles.length
 			if(!isNil(handles[0])){
 				await handles[0].click()
 			}
 			
-		}while(buttonsNum > 1)
+		} while (buttonsNum > 1)
 	
-		await waitForNetworkIdle(page,100,0)
+		await waitForNetworkIdle(page,100,1)
 		
 		const html = await page.content()
 		return html;

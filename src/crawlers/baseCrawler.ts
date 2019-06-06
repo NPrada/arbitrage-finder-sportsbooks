@@ -3,7 +3,7 @@ import { UAs } from './resources/useragentList'
 import date from 'date-and-time'
 import uniqid from 'uniqid'
 import isNil from 'lodash/isNil'
-
+import puppeteer, {Page} from 'puppeteer'
 export type SportName = "csgo" | "lol" | "dota2" | "rainbow6" | "sc2"| "overwatch" | "callofduty" | "rocketleague" //possible additions: hearthstone, rocket league(might have ties),
 export type MarketNames = "outright"
 export type SportBookIds = 'skybet' | 'egb' | 'betway'
@@ -248,11 +248,11 @@ export default class BaseCrawler {
 		let builtMessage = ''
 
 		if (severity === errorTypes.NON_BLOCKING) {
-			builtMessage = `(${sportbookId}) Non Blocking Error: ${message}`
+			builtMessage = `Non Blocking Error: ${message}`
 		} else {
 			builtMessage = `${severity} ERROR: ${message}}`
 		}
-		console.log(builtMessage)
+		console.log(`(${sportbookId}) ${builtMessage}`)
 		//take a screenshot 
 		if(severity === errorTypes.CRITICAL && !isNil(puppeteerPage))
 			await puppeteerPage.screenshot({path: `error-${errId}.png`});
@@ -261,13 +261,45 @@ export default class BaseCrawler {
 	}
 
 
+	/**
+	 *
+	 * simple function used to make sure we only return valid keys 
+	 * @param {number} index
+	 * @returns {(0 | 1 | 2)}
+	 * @memberof BaseCrawler
+	 */
 	getTeamKey (index: number): 0 | 1 | 2 {
-		let teamKey: 0 | 1 | 2 = 1
+		let teamKey: 0 | 1 | 2 = 0
 		if (index === 1)
 			teamKey = 1
 		else if (index === 2)
 			teamKey = 2
 
 		return teamKey
+	}
+
+
+	/**
+	 *
+	 * 
+	 * @param {*} domsGetter
+	 * @returns
+	 * @memberof BaseCrawler
+	 */
+	async runPuppeteer (domsGetter: (page:Page, browser:any,) => any){
+		let browser = null
+		let page = null
+		try{
+			browser = await puppeteer.launch({ignoreHTTPSErrors: true, args: ['--no-sandbox','--disable-setuid-sandbox']});
+			page = await browser.newPage();
+			await page.setUserAgent(this.fakeUA())
+			await page.setViewport({width: 1500, height:2500})
+			
+		 return await domsGetter(page, browser )
+		} catch(err) {
+
+			if (!isNil(browser)) await browser.close()
+			throw err
+		}
 	}
 }
