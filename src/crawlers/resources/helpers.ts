@@ -53,10 +53,10 @@ export function findMarketObject (marketName: MarketNames, marketsArr: Array<any
 
 /**
  * https://github.com/GoogleChrome/puppeteer/issues/1353
- * configurable function used to wait untill the network is idle
+ * configurable function used to wait untill the network is idle using puppeteer
  * 
  * @param page 
- * @param timeout 
+ * @param timeout amount of time with no requests on the network
  * @param maxInflightRequests 
  */
 export function waitForNetworkIdle(page:Page, timeout:number, maxInflightRequests:number = 0) {
