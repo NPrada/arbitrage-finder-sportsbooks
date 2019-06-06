@@ -248,11 +248,11 @@ export default class BaseCrawler {
 		let builtMessage = ''
 
 		if (severity === errorTypes.NON_BLOCKING) {
-			builtMessage = `(${sportbookId}) Non Blocking Error: ${message}`
+			builtMessage = `Non Blocking Error: ${message}`
 		} else {
 			builtMessage = `${severity} ERROR: ${message}}`
 		}
-		console.log(builtMessage)
+		console.log(sportbookId + builtMessage)
 		//take a screenshot 
 		if(severity === errorTypes.CRITICAL && !isNil(puppeteerPage))
 			await puppeteerPage.screenshot({path: `error-${errId}.png`});

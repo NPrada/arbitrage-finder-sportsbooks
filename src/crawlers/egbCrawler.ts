@@ -16,7 +16,7 @@ class EGBCrawler extends BaseCrawler {
     try{
 			const startTime = process.hrtime()
 			//prepping puppeteer browser
-			browser = await puppeteer.launch({args: ['--no-sandbox']});
+			browser = await puppeteer.launch({ignoreHTTPSErrors: true, args: ['--no-sandbox']});
 			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
