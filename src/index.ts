@@ -33,7 +33,7 @@ const crawlerTask = async () => {
 	const findingsReport = arbFinder.getProfitability(allGameContainers)
 	
  	const fullCrawlData: FullCrawlObject = {
-		date: date.format(new Date(), 'YYYY/MM/DD HH:mm:ss'),
+		crawlDate: date.format(new Date(), 'YYYY/MM/DD HH:mm:ss'),
 		crawlersData: [
 			betwayCrawler.getCrawlMetadata(),
 			skyBetCrawler.getCrawlMetadata(),

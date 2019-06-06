@@ -50,7 +50,7 @@ export interface CrawlerMetadata {
 	startDate: string
 	elapsedTime: number
 	gamesFound: Array<String>
-	errors: Array<{uuid: string, severity: ErrorSeverityLevels, message: string}>
+	errorsList: Array<{uuid: string, severity: ErrorSeverityLevels, message: string}>
 }
 
 export default class BaseCrawler {
@@ -68,7 +68,7 @@ export default class BaseCrawler {
 			startDate: date.format(new Date(),'YYYY-MM-DD HH:mm:ss'),
 			elapsedTime: 0,
 			gamesFound: [],
-			errors: []
+			errorsList: []
 		}
 		this.errorTypes = {CRITICAL: 'CRITICAL', NON_BLOCKING: 'NON_BLOCKING'}
 	}
@@ -257,7 +257,7 @@ export default class BaseCrawler {
 		if(severity === errorTypes.CRITICAL && !isNil(puppeteerPage))
 			await puppeteerPage.screenshot({path: `error-${errId}.png`});
 
-		this.crawlData.errors.push({uuid: errId, severity: severity, message: message})
+		this.crawlData.errorsList.push({uuid: errId, severity: severity, message: message})
 	}
 
 
