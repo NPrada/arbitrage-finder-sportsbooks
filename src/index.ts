@@ -43,7 +43,7 @@ const crawlerTask = async () => {
 			return allGameContainers[key];
 		})
 	}
-	logJson(fullCrawlData, 'fullCrawlData')
+	
 	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')
 }
