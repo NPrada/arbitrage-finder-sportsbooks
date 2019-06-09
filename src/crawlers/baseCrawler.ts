@@ -290,12 +290,17 @@ export default class BaseCrawler {
 		let browser = null
 		let page = null
 		try{
-			browser = await puppeteer.launch({ignoreHTTPSErrors: true, args: ['--no-sandbox','--disable-setuid-sandbox']});
+			browser = await puppeteer.launch({
+				ignoreHTTPSErrors: true, 
+				args: ['--no-sandbox','--disable-setuid-sandbox']
+			});
 			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
 			
-		 return await domsGetter(page, browser )
+		 const result = await domsGetter(page, browser )
+		 if (!isNil(browser)) await browser.close()
+		 return result
 		} catch(err) {
 
 			if (!isNil(browser)) await browser.close()
