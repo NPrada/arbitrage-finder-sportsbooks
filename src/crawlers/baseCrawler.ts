@@ -49,6 +49,7 @@ export interface CrawlerMetadata {
 	sportbookId: SportBookIds
 	startDate: string
 	elapsedTime: number
+	isSuccessful: boolean
 	gamesFound: Array<ParsedGameData>
 	errorsList: Array<{uuid: string, severity: ErrorSeverityLevels, message: string}>
 }
@@ -67,6 +68,7 @@ export default class BaseCrawler {
 			sportbookId: sportbookId,
 			startDate: date.format(new Date(),'YYYY-MM-DD HH:mm:ss'),
 			elapsedTime: 0,
+			isSuccessful: true,
 			gamesFound: [],
 			errorsList: []
 		}
@@ -249,7 +251,8 @@ export default class BaseCrawler {
 
 		if (severity === errorTypes.NON_BLOCKING) {
 			builtMessage = `Non Blocking Error: ${message}`
-		} else {
+		} else if (severity === errorTypes.CRITICAL){
+			this.crawlData.isSuccessful = false
 			builtMessage = `${severity} ERROR: ${message}}`
 		}
 		console.log(`(${sportbookId}) ${builtMessage}`)
