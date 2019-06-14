@@ -18,29 +18,29 @@ export default class BetwayCrawler extends BaseCrawler {
 			const startTime = process.hrtime()
 
 			let allDoms = await this.runPuppeteer(async (page, browser) => {
-				const maxRequestDelay = 5;
+				const maxRequestDelay = 4;	//in seconds
 				const minRequestDelay = 1;
 				const allHtml:any = {}
 
-				allHtml.csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
+				allHtml.csgoHtml = await this.getDom(page, `/en/sports/sct/esports/cs-go`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 12.5% crawling complete');
-				allHtml.lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
+				allHtml.lolHtml = await this.getDom(page, `/en/sports/sct/esports/league-of-legends`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 25% crawling complete');
-				allHtml.dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
+				allHtml.dota2Html = await this.getDom(page, `/en/sports/sct/esports/dota-2`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 37.5% crawling complete');
-				allHtml.rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
+				allHtml.rainbowHtml = await this.getDom(page, `/en/sports/sct/esports/rainbow-six`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 50% crawling complete');
-				allHtml.overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
+				allHtml.overwatchHtml = await this.getDom(page, `/en/sports/sct/esports/overwatch`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 62.5% crawling complete');
-				allHtml.sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
+				allHtml.sc2Html = await this.getDom(page, `/en/sports/sct/esports/starcraft-2`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 75% crawling complete');
-				allHtml.hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
+				allHtml.hearthsoneHtml = await this.getDom(page, `/en/sports/sct/esports/hearthstone`)
 				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
 				console.log('(betway) 87.5% crawling complete');
 				
@@ -211,10 +211,19 @@ export default class BetwayCrawler extends BaseCrawler {
 	 *
 	 * @memberof BetwayCrawler
 	 */
-	getDom = async (page:Page, url:string):Promise<string> => {
+	getDom = async (page:Page, urlPath:string):Promise<string> => {
 		
-		await page.goto(url, { waitUntil: 'networkidle0', timeout: 150000 });
-	
+		await page.goto(this.baseURL + urlPath);
+		try{
+			await page.waitForSelector('.endpoint.node > div')
+
+			if(!page.url().includes(urlPath)) return ''
+			
+			await page.waitForSelector('.eventTableItemCollection[data-widget*="EventTableListWidget"]')
+		} catch (err){
+			throw '(betway) Error: waiting for selector failed, url:' + urlPath + ' - '+ err
+		}
+		
 		let buttonsNum = 0;
 		do {
 			const handles = await page.$$('.collapsableHeader[collapsed=true]');
@@ -222,10 +231,10 @@ export default class BetwayCrawler extends BaseCrawler {
 			if(!isNil(handles[0])){
 				await handles[0].click()
 			}
-			
+			await this.sleep(500)
 		} while (buttonsNum > 1)
 	
-		await waitForNetworkIdle(page,100,1)
+		await this.sleep(1000)
 		
 		const html = await page.content()
 		return html;
