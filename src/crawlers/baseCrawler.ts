@@ -304,6 +304,7 @@ export default class BaseCrawler {
 			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
 			await page.setViewport({width: 1500, height:2500})
+			await page.setDefaultTimeout(15000)
 
 		 const result = await domsGetter(page, browser )
 		 if (!isNil(browser)) await browser.close()
