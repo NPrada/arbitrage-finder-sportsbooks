@@ -18,16 +18,11 @@ class EGBCrawler extends BaseCrawler {
 
 
 			let allDom = await this.runPuppeteer(async (page, browser) => {
-				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
+				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
 				
 				await page.waitForSelector("#app")
 				return await page.content()
 				
-				// return await page.evaluate(() => {
-				// 	if(document !== null && document.getElementById("app") !== null) {         
-				// 		return document.getElementById("app")!.innerHTML
-				// 	}
-				// });
 			})
 
 			
