@@ -165,16 +165,20 @@ export default class BaseCrawler {
 	 * formats all the odds of an array of BetData objects
 	 * @param bets 
 	 */
-	formatAllMarketOdds (bets:Array<RawBetData>,parentUuid:string):Array<BetData> { //FIXME: is parentUuid needed?
+	formatAllMarketOdds (bets:Array<RawBetData>,parentUuid:string):Array<BetData> {
+		try {
+			return bets.map((element: any) => {
+				return {
+					teamKey: element.teamKey, 
+					betName: element.betName,
+					parentUuid: parentUuid,
+					odds: this.formatOdds(element.odds)
+				}
+			});
+		} catch(err) {
+			throw err + ' -  bets object: ' + bets
+		}
 		
-		return bets.map((element: any) => {
-			return {
-				teamKey: element.teamKey, 
-				betName: element.betName,
-				parentUuid: parentUuid,
-				odds: this.formatOdds(element.odds)
-			}
-		});
 	}
 
 	/**
