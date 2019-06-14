@@ -20,7 +20,6 @@
   "author": "NP",
   "license": "ISC",
   "dependencies": {
-    "@types/node-cron": "^2.0.1",
     "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
     "date-and-time": "^0.6.3",
@@ -37,6 +36,7 @@
     "uniqid": "^5.0.3"
   },
   "devDependencies": {
+		"@types/node-cron": "^2.0.1",
     "@types/body-parser": "^1.17.0",
     "@types/cheerio": "^0.22.11",
     "@types/date-and-time": "^0.6.0",
