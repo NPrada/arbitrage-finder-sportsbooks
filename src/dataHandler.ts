@@ -21,17 +21,17 @@ export type FullMatchData = {
 }; 
 
 type GameDataContainer = {
-	uuid: string,
+	id: string,
 	sportName: string,
 	competitionName: string,
 	date: string,
 	team1Name: string,
 	team2Name: string
-	matchedGames: Array<{sportbookId: SportBookIds, uuid: string}>
+	matchedGames: Array<{sportbookId: SportBookIds, id: string}>
 }
 
 type DataDictionary = {
-	[uuid: string]: any
+	[id: string]: any
 }
 type BetStats = {
 	arb1: number, //percentage indicates what portion your investment will take up the total winnings.
@@ -52,11 +52,11 @@ export default class DataHandler {
 		this.gameDataDictionary = this.transformToObjectList(allGamesCrawled)
   }
 	/**
-	 * Puts every gameData that was crawled into an object, where each key is the uuid of the 
+	 * Puts every gameData that was crawled into an object, where each key is the id of the 
 	 * gameData and the data is the gameData object
 	 * This is done so we can easily access gameData by id very easily.
 	 * Its more efficient than making a function that goes through the entire list looking for the one 
-	 * that has the particular uuid
+	 * that has the particular id
 	 * @param FullMatchData 
 	 */
 	transformToObjectList (FullMatchData:FullMatchData): DataDictionary {
@@ -66,7 +66,7 @@ export default class DataHandler {
 		
 		sportbookIds.map(sportKey => {
 			this.allGamesCrawled[sportKey].map( (gameData:ParsedGameData) => {
-				gameDataDictionary[gameData.uuid] = gameData 
+				gameDataDictionary[gameData.id] = gameData 
 			})
 		})
 		
@@ -76,15 +76,15 @@ export default class DataHandler {
 	/**
 		 * checks if there alreaady exists a MatchContainer that for that specific game
 		 * @param gameData 
-		 * @returns {string} uuid of the container that the gamedata can go in or null
+		 * @returns {string} id of the container that the gamedata can go in or null
 		 */
 		dataCanBePutInContainer (gameData:ParsedGameData, gameMatchContainers:DataDictionary): string {
-			const containersUuids = keys(gameMatchContainers)
-			for(let i=0; i < containersUuids.length; i++){
-				for(let k=0; k < gameMatchContainers[containersUuids[i]].matchedGames.length; k++){
-					const gameUuid = gameMatchContainers[containersUuids[i]].matchedGames[k].uuid
-					if (this.isMatching(this.gameDataDictionary[gameUuid], gameData)) { //checks if its matching or not
-						return gameMatchContainers[containersUuids[i]].uuid
+			const containersIds = keys(gameMatchContainers)
+			for(let i=0; i < containersIds.length; i++){
+				for(let k=0; k < gameMatchContainers[containersIds[i]].matchedGames.length; k++){
+					const gameId = gameMatchContainers[containersIds[i]].matchedGames[k].id
+					if (this.isMatching(this.gameDataDictionary[gameId], gameData)) { //checks if its matching or not
+						return gameMatchContainers[containersIds[i]].id
 					}
 				}
 			}
@@ -97,14 +97,14 @@ export default class DataHandler {
 		 */
 		makeGameMatchContainer (gameData1:ParsedGameData):GameDataContainer {
 			return {
-				uuid: uniqid(),
+				id: uniqid(),
 				sportName: gameData1.sportName,
 				competitionName: gameData1.competitionName,
 				date: gameData1.date,
 				team1Name: gameData1.team1Name,
 				team2Name: gameData1.team2Name,
 				matchedGames: [
-					{sportbookId:gameData1.sportbookId, uuid: gameData1.uuid},
+					{sportbookId:gameData1.sportbookId, id: gameData1.id},
 				]
 			}
 		}
@@ -122,11 +122,11 @@ export default class DataHandler {
 					gameContainersDictionary[matchedContainerId].matchedGames
 						.push({
 							sportbookId: gameData.sportbookId, 
-							uuid: gameData.uuid
+							id: gameData.id
 						})
 				} else {
 					const newMatchContainer = this.makeGameMatchContainer(gameData)
-					gameContainersDictionary[newMatchContainer.uuid] = newMatchContainer
+					gameContainersDictionary[newMatchContainer.id] = newMatchContainer
 				}
 			})
 		})
@@ -146,7 +146,7 @@ export default class DataHandler {
 
 		filteredMatchContainers.forEach((container:GameDataContainer) => {
 			const gameDatasArr: Array<ParsedGameData> = container.matchedGames.map(gameData => {
-				return this.gameDataDictionary[gameData.uuid]
+				return this.gameDataDictionary[gameData.id]
 			});
 			
 			const arbitraryTeam1 = gameDatasArr[0].team1Name
@@ -163,8 +163,8 @@ export default class DataHandler {
 			const team2BestOdds = maxBy(team2Bets, (bet: BetData):number => {return bet.odds})
 
 			profitMargins.push({
-				market1: this.gameDataDictionary[team1BestOdds.parentUuid],
-				market2: this.gameDataDictionary[team2BestOdds.parentUuid],
+				market1: this.gameDataDictionary[team1BestOdds.parentId],
+				market2: this.gameDataDictionary[team2BestOdds.parentId],
 				profitInfo: this.getProfitMargin(team1BestOdds.odds,team2BestOdds.odds,10)
 				})
 		})

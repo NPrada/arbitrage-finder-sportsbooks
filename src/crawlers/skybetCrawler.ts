@@ -138,7 +138,7 @@ class SkyBetCrawler extends BaseCrawler {
 			if(rawDataError !== null){
 				throw rawDataError
 			}
-      const uuid = uniqid()
+      const id = uniqid()
       const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g			//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /.+(?=(\s\())/g 		        //gets it from eg: 'Pixel Esports Club (Bo1)'
       const removeTeam1andVS = /(^.+?((\s\d\sv\s\d)|(\sv\s)))/g  //used to remove first part of regexm mathes eg: 'Infinity eSports v' on 'Infinity eSports v Pixel Esports Club (Bo1)'
@@ -164,13 +164,13 @@ class SkyBetCrawler extends BaseCrawler {
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
 				const parsedMarketData: MarketData = {
 					...elem,
-					bets: this.formatAllMarketOdds(elem.bets, uuid)
+					bets: this.formatAllMarketOdds(elem.bets, id)
 				}
 				return parsedMarketData
 			})
 											
       return {
-				uuid: uuid,
+				id: id,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,

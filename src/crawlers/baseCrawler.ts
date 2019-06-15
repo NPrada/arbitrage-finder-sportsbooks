@@ -10,7 +10,7 @@ export type SportBookIds = 'skybet' | 'egb' | 'betway'
 export type ErrorSeverityLevels = 'CRITICAL' | 'NON_BLOCKING' 
 
 export type RawBetData = {teamKey: 0|1|2, betName: string , odds: number | string}
-export type BetData = {teamKey: 0|1|2, parentUuid: string, betName: string, odds: number} //teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
+export type BetData = {teamKey: 0|1|2, parentId: string, betName: string, odds: number} //teamkey 1 means its team 1, 0 means its the 3rd choice eg a draw
 
 export type RawMarketData = {marketName: MarketNames, bets: Array<RawBetData>}
 export type MarketData = {marketName: MarketNames, bets: Array<BetData>}
@@ -32,7 +32,7 @@ export interface RawGameData {
 
 export interface ParsedGameData { 
 	parentMatchesdId: string | null,
-	uuid: string
+	id: string
 	sportbookId: SportBookIds,
 	competitionName: string
 	sportName: string 		
@@ -51,7 +51,7 @@ export interface CrawlerMetadata {
 	elapsedTime: number
 	isSuccessful: boolean
 	gamesFound: Array<ParsedGameData>
-	errorsList: Array<{uuid: string, severity: ErrorSeverityLevels, message: string}>
+	errorsList: Array<{id: string, severity: ErrorSeverityLevels, message: string}>
 }
 
 export default class BaseCrawler {
@@ -171,7 +171,7 @@ export default class BaseCrawler {
 				return {
 					teamKey: element.teamKey, 
 					betName: element.betName,
-					parentUuid: parentUuid,
+					parentId: parentUuid,
 					odds: this.formatOdds(element.odds)
 				}
 			});
@@ -264,7 +264,7 @@ export default class BaseCrawler {
 		if(severity === errorTypes.CRITICAL && !isNil(puppeteerPage))
 			await puppeteerPage.screenshot({path: `error-${errId}.png`});
 
-		this.crawlData.errorsList.push({uuid: errId, severity: severity, message: message})
+		this.crawlData.errorsList.push({id: errId, severity: severity, message: message})
 	}
 
 

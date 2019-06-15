@@ -95,7 +95,7 @@ class EGBCrawler extends BaseCrawler {
   parseRawData = (rawRowData: RawGameData): ParsedGameData | null => {
     try{
 
-			const uuid = uniqid()
+			const id = uniqid()
 			
 			//look for any erros in the raw data and throw them if you find any
 			const rawDataError = this.checkForErrors(rawRowData)
@@ -107,7 +107,7 @@ class EGBCrawler extends BaseCrawler {
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
 				const parsedMarketData: MarketData = {
 					...elem,
-					bets: this.formatAllMarketOdds(elem.bets, uuid)
+					bets: this.formatAllMarketOdds(elem.bets, id)
 				}
 				return parsedMarketData
 			})
@@ -121,7 +121,7 @@ class EGBCrawler extends BaseCrawler {
 
       
       return {
-				uuid: uuid,
+				id: id,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
 				competitionName: rawRowData.competitionName,
