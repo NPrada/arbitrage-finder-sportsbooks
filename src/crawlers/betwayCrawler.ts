@@ -161,7 +161,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			if(date.isValid(rawRowData.date, 'YYYY-MM-DD-HH:mm')){
 				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
-			} else throw `Problem parsing the date. Tried to parse: "${rawRowData.date}"`
+			} else throw `Problem parsing the date. Tried to parse: '${rawRowData.date}'`
 
 			return {
 				id: id,
