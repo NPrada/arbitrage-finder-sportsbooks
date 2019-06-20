@@ -4,7 +4,7 @@ import 'cross-fetch/polyfill';
 
 export const postFullCrawlObject = async (input: any) => {
 const client = new ApolloClient({
-  uri: "http://localhost:3000/graphql"
+  uri: "http://peak-odds.peakbetting.now.sh/graphql" //http://localhost:3000/graphql
 });
 
 
