@@ -27,6 +27,12 @@ Solution --> https://stackoverflow.com/a/40350534/4704145
 - Run `npm run testdeployment` you should get an email
 - Run `npm run deploy`
 
+### Checking on crontab
+- `/etc/init.d/cron status` see the status of crontab, if its alive or dead
+- `crontab -l` view the config file with all the jobs listed
+- `/etc/init.d/crond start`
+- `/etc/init.d/crond stop`
+
 ### TODO
 - https://github.com/GoogleChrome/puppeteer/issues/3443#issuecomment-433096772
 - do not match games on the same sportsbook
