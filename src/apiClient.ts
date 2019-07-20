@@ -1,22 +1,22 @@
-import ApolloClient from "apollo-boost";
-import gql from "graphql-tag";
 import 'cross-fetch/polyfill';
+import fetch from 'isomorphic-fetch'
 
 export const postFullCrawlObject = async (input: any) => {
-const client = new ApolloClient({
-  uri: "http://localhost:3000/graphql"
-});
-
-
-return await client.mutate({
-  mutation: gql`mutation insertJob($input: CrawlResultInput!) {
-      createCrawlResultContainer(input: $input ) {
-          id
-      }
-  }`,
-  variables: {
-    input: input
-  }
-})
-	.then(result => console.log(result));
+fetch('http://peak-odds.peakbetting.now.sh/graphql', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+	body: JSON.stringify({
+    query: `mutation ($input: CrawlResultInput){
+					createCrawlResultContainer(input: $input){
+						id
+					}
+			}`,
+    variables: { input: input }
+  })
+})	
+	.then(res => {
+		console.log('res',res)
+		return res	
+	})
+  .then(res => res.json())
 }
