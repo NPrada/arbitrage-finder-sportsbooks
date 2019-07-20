@@ -18,16 +18,11 @@ class EGBCrawler extends BaseCrawler {
 
 
 			let allDom = await this.runPuppeteer(async (page, browser) => {
-				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
+				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
 				
 				await page.waitForSelector("#app")
 				return await page.content()
 				
-				// return await page.evaluate(() => {
-				// 	if(document !== null && document.getElementById("app") !== null) {         
-				// 		return document.getElementById("app")!.innerHTML
-				// 	}
-				// });
 			})
 
 			
@@ -100,7 +95,7 @@ class EGBCrawler extends BaseCrawler {
   parseRawData = (rawRowData: RawGameData): ParsedGameData | null => {
     try{
 
-			const uuid = uniqid()
+			const id = uniqid()
 			
 			//look for any erros in the raw data and throw them if you find any
 			const rawDataError = this.checkForErrors(rawRowData)
@@ -112,7 +107,7 @@ class EGBCrawler extends BaseCrawler {
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
 				const parsedMarketData: MarketData = {
 					...elem,
-					bets: this.formatAllMarketOdds(elem.bets, uuid)
+					bets: this.formatAllMarketOdds(elem.bets, id)
 				}
 				return parsedMarketData
 			})
@@ -126,7 +121,7 @@ class EGBCrawler extends BaseCrawler {
 
       
       return {
-				uuid: uuid,
+				id: id,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
 				competitionName: rawRowData.competitionName,
