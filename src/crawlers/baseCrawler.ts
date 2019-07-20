@@ -264,7 +264,7 @@ export default class BaseCrawler {
 		if(severity === errorTypes.CRITICAL && !isNil(puppeteerPage))
 			await puppeteerPage.screenshot({path: `error-${errId}.png`});
 
-		this.crawlData.errorsList.push({id: errId, severity: severity, message: message})
+		this.crawlData.errorsList.push({id: errId, severity: severity, message: JSON.stringify(message)})
 	}
 
 
