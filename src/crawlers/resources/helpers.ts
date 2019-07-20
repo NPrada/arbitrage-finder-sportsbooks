@@ -18,7 +18,7 @@ export const logHtml = (html: string | null | undefined) => {
  * @param json 
  * @param fileName 
  */
-export const logJson = (json: object | null | undefined, fileName:string) => {
+export const logJson = (json: any | null | undefined, fileName:string) => {
    fs.writeFile('debugging/'+fileName+'.json', JSON.stringify(json), function (err) {
     if (err) {
       return console.log(err);

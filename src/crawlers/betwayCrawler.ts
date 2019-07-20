@@ -221,7 +221,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			
 			await page.waitForSelector('.eventTableItemCollection[data-widget*="EventTableListWidget"]')
 		} catch (err){
-			throw '(betway) Error: waiting for selector failed, url:' + urlPath + ' - '+ err
+			console.log('(betway) Error: waiting for selector failed, url:' + urlPath + ' - '+ err) //TODO make sure this gets safely added to the errors
 		}
 		
 		let buttonsNum = 0;
