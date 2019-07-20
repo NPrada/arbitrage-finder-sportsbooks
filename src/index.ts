@@ -7,11 +7,10 @@ import BetwayCrawler from './crawlers/betwayCrawler'
 import DataHandler, {FullCrawlObject} from './dataHandler'
 import { findMarketObject, logJson } from "./crawlers/resources/helpers";
 import sendMail from './emailer'
+import {postFullCrawlObject} from  './apiClient'
 import date from 'date-and-time'
 import * as dotenv from 'dotenv'
 dotenv.config()         //load in the env variables
-
-import {exampleCrawlerResponse} from './crawlers/resources/crawlResponse'
 
 const egbCrawler = new EGBCrawler('egb')
 const skyBetCrawler = new SkyBetCrawler('skybet')
@@ -33,7 +32,7 @@ const crawlerTask = async () => {
 	const findingsReport = arbFinder.getProfitability(allGameContainers)
 	
  	const fullCrawlData: FullCrawlObject = {
-		date: date.format(new Date(), 'YYYY/MM/DD HH:mm:ss'),
+		crawlDate: date.format(new Date(), 'YYYY/MM/DD HH:mm:ss'),
 		crawlersData: [
 			betwayCrawler.getCrawlMetadata(),
 			skyBetCrawler.getCrawlMetadata(),
@@ -43,6 +42,8 @@ const crawlerTask = async () => {
 			return allGameContainers[key];
 		})
 	}
+
+	await postFullCrawlObject(fullCrawlData) //put all data into db
 
 	await sendMail('Arbitrage Findings Report',findingsReport)
 	console.log('Finishing crawl task....')

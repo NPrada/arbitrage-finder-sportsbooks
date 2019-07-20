@@ -12,36 +12,29 @@ class EGBCrawler extends BaseCrawler {
 
   run = async ():Promise<Array<ParsedGameData>> => {
 		let browser = null
+		let page = null
     try{
 			const startTime = process.hrtime()
-			//prepping puppeteer browser
-			browser = await puppeteer.launch({args: ['--no-sandbox']});
-			const page = await browser.newPage();
-			await page.setUserAgent(this.fakeUA())
-			await page.setViewport({width: 1500, height:2500})
 
 
-      await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2', timeout: 150000 });
-     
-			await page.waitForSelector("#app")
-			let allDom = await page.evaluate(() => {
-        if(document !== null && document.getElementById("app") !== null) {         
-          return document.getElementById("app")!.innerHTML
-        }
-      });
+			let allDom = await this.runPuppeteer(async (page, browser) => {
+				await page.goto(`${this.baseURL}/play/simple_bets`, { waitUntil: 'networkidle2' });
+				
+				await page.waitForSelector("#app")
+				return await page.content()
+				
+			})
 
-
+			
 			if (isNil(allDom) || allDom === '')
 				throw `${this.baseURL}/play/simple_bets got no dom`
-	
+			
 			const $ = cheerio.load(allDom)
 			const eventsTable = $('.table-bets', '.content').find('.table-bets__main-row-holder')
 			if (eventsTable === null){
-				await page.screenshot({path: 'egbError-didnt_find_table.png'});
 				throw `Error: could not find the table containing all the events`
 			}
 				
-	
 			const matchDataList: Array<ParsedGameData> = []
 	
 			for (let i = 0; i < eventsTable.length; i++) {
@@ -50,26 +43,17 @@ class EGBCrawler extends BaseCrawler {
         if (parsedData !== null) matchDataList.push(parsedData)
 			}
 
-			await browser.close();
 			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			this.crawlData.elapsedTime = Number(elapsedTime)
-			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
-				return elem.uuid
-			})
+			this.crawlData.gamesFound = matchDataList
 			if(!matchDataList.length) {
 				logHtml(allDom)
-				await page.screenshot({path: 'egbError-didnt_find_data.png'});
-				await page.screenshot({path: 'egbError-didnt_find_data.png'});
 				throw Error('No errors logged but we didnt get any match data at all try restarting')
 			}
 			console.log(`egb crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList
 		}catch(err){
-			console.log("BLOCKING ERROR:",err)
-			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
-			if (!isNil(browser)) {
-				await browser.close()
-			} 
+			this.saveError(this.errorTypes.CRITICAL, err, page)
 			return []
 		}
   }
@@ -111,7 +95,7 @@ class EGBCrawler extends BaseCrawler {
   parseRawData = (rawRowData: RawGameData): ParsedGameData | null => {
     try{
 
-			const uuid = uniqid()
+			const id = uniqid()
 			
 			//look for any erros in the raw data and throw them if you find any
 			const rawDataError = this.checkForErrors(rawRowData)
@@ -123,7 +107,7 @@ class EGBCrawler extends BaseCrawler {
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
 				const parsedMarketData: MarketData = {
 					...elem,
-					bets: this.formatAllMarketOdds(elem.bets, uuid)
+					bets: this.formatAllMarketOdds(elem.bets, id)
 				}
 				return parsedMarketData
 			})
@@ -137,7 +121,7 @@ class EGBCrawler extends BaseCrawler {
 
       
       return {
-				uuid: uuid,
+				id: id,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
 				competitionName: rawRowData.competitionName,
@@ -148,8 +132,7 @@ class EGBCrawler extends BaseCrawler {
 				markets: parsedMarkets
       }
     }catch(err){ //logs an error and discards this gameData
-			console.log('(egb) Non Blocking Error: ' + err)
-			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
+			this.saveError(this.errorTypes.NON_BLOCKING, err)
       return null
     }
   }

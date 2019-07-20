@@ -18,7 +18,7 @@ export const logHtml = (html: string | null | undefined) => {
  * @param json 
  * @param fileName 
  */
-export const logJson = (json: object | null | undefined, fileName:string) => {
+export const logJson = (json: any | null | undefined, fileName:string) => {
    fs.writeFile('debugging/'+fileName+'.json', JSON.stringify(json), function (err) {
     if (err) {
       return console.log(err);
@@ -53,10 +53,10 @@ export function findMarketObject (marketName: MarketNames, marketsArr: Array<any
 
 /**
  * https://github.com/GoogleChrome/puppeteer/issues/1353
- * configurable function used to wait untill the network is idle
+ * configurable function used to wait untill the network is idle using puppeteer
  * 
  * @param page 
- * @param timeout 
+ * @param timeout amount of time with no requests on the network
  * @param maxInflightRequests 
  */
 export function waitForNetworkIdle(page:Page, timeout:number, maxInflightRequests:number = 0) {

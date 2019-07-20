@@ -33,15 +33,11 @@ class SkyBetCrawler extends BaseCrawler {
 			
 			const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 			this.crawlData.elapsedTime = Number(elapsedTime)
-			this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
-				return elem.uuid
-			})
+			this.crawlData.gamesFound = matchDataList
       console.log(`skybet crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
 			return matchDataList;
     }catch(err){
-			console.log('BLOCKING ERROR')
-			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
-      console.log(err)
+			this.saveError(this.errorTypes.CRITICAL, err)
       return []
     }
   }
@@ -130,8 +126,9 @@ class SkyBetCrawler extends BaseCrawler {
         if(parsedRowData !== null) data.push(parsedRowData)
       }
     }
-    return data;
-    }
+		 
+		return data;
+  }
   
   parseRawData = (rawRowData: RawGameData, extraData: extraDataType): ParsedGameData | null => {
     try{
@@ -141,7 +138,7 @@ class SkyBetCrawler extends BaseCrawler {
 			if(rawDataError !== null){
 				throw rawDataError
 			}
-      const uuid = uniqid()
+      const id = uniqid()
       const team1regx = /(^.+?((?=\s\d\sv\s)|(?=\sv\s)))/g			//gets it from eg: 'Infinity eSports v Pixel Esports Club (Bo1)'
       const team2regx = /.+(?=(\s\())/g 		        //gets it from eg: 'Pixel Esports Club (Bo1)'
       const removeTeam1andVS = /(^.+?((\s\d\sv\s\d)|(\sv\s)))/g  //used to remove first part of regexm mathes eg: 'Infinity eSports v' on 'Infinity eSports v Pixel Esports Club (Bo1)'
@@ -167,13 +164,13 @@ class SkyBetCrawler extends BaseCrawler {
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
 				const parsedMarketData: MarketData = {
 					...elem,
-					bets: this.formatAllMarketOdds(elem.bets, uuid)
+					bets: this.formatAllMarketOdds(elem.bets, id)
 				}
 				return parsedMarketData
 			})
 											
       return {
-				uuid: uuid,
+				id: id,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
         date: formattedDate,
@@ -184,9 +181,7 @@ class SkyBetCrawler extends BaseCrawler {
 				markets: parsedMarkets
       }
     }catch(err){
-      
-			console.log('(sky) Non Blocking Error:',err)
-			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
+			this.saveError(this.errorTypes.NON_BLOCKING, err)
       return null
     }
   }

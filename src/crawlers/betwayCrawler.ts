@@ -13,55 +13,50 @@ export default class BetwayCrawler extends BaseCrawler {
 
 	run = async ():Promise<Array<ParsedGameData>> => {
 		let browser = null
+		let page = null
 		try{
 			const startTime = process.hrtime()
-			
-			//prepping puppeteer browser
-			browser = await puppeteer.launch({
-				'args': ['--no-sandbox'],
-				//headless: false,
-				//slowMo: 200
-			}); 
-			const page = await browser.newPage();
-			await page.setUserAgent(this.fakeUA())
-			await page.setViewport({width: 1500, height:2500})
 
-			const maxRequestDelay = 5;
-			const minRequestDelay = 1;
+			let allDoms = await this.runPuppeteer(async (page, browser) => {
+				const maxRequestDelay = 4;	//in seconds
+				const minRequestDelay = 1;
+				const allHtml:any = {}
+
+				allHtml.csgoHtml = await this.getDom(page, `/en/sports/sct/esports/cs-go`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 12.5% crawling complete');
+				allHtml.lolHtml = await this.getDom(page, `/en/sports/sct/esports/league-of-legends`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 25% crawling complete');
+				allHtml.dota2Html = await this.getDom(page, `/en/sports/sct/esports/dota-2`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 37.5% crawling complete');
+				allHtml.rainbowHtml = await this.getDom(page, `/en/sports/sct/esports/rainbow-six`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 50% crawling complete');
+				allHtml.overwatchHtml = await this.getDom(page, `/en/sports/sct/esports/overwatch`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 62.5% crawling complete');
+				allHtml.sc2Html = await this.getDom(page, `/en/sports/sct/esports/starcraft-2`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 75% crawling complete');
+				allHtml.hearthsoneHtml = await this.getDom(page, `/en/sports/sct/esports/hearthstone`)
+				await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
+				console.log('(betway) 87.5% crawling complete');
+				
+				return allHtml
+			})
 
 			const sportDaysLists = []
 
-			const csgoHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/cs-go`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 12.5% crawling complete');
-			const lolHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/league-of-legends`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 25% crawling complete');
-			const dota2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/dota-2`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 37.5% crawling complete');
-			const rainbowHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/rainbow-six`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 50% crawling complete');
-			const overwatchHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/overwatch`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 62.5% crawling complete');
-			const sc2Html = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/starcraft-2`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 75% crawling complete');
-			const hearthsoneHtml = await this.getDom(page, `${this.baseURL}/en/sports/sct/esports/hearthstone`)
-			await this.sleep(random(minRequestDelay,maxRequestDelay)*1000) 
-			console.log('(betway) 87.5% crawling complete');
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.csgoHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.lolHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.dota2Html))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.rainbowHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.overwatchHtml))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.sc2Html))
+			sportDaysLists.push(this.getDaysTableCheerio(allDoms.hearthsoneHtml))
 
-			sportDaysLists.push(this.getDaysTableCheerio(csgoHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(lolHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(dota2Html))
-			sportDaysLists.push(this.getDaysTableCheerio(rainbowHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(overwatchHtml))
-			sportDaysLists.push(this.getDaysTableCheerio(sc2Html))
-			sportDaysLists.push(this.getDaysTableCheerio(hearthsoneHtml))
-
-		
 			const matchDataList: Array<ParsedGameData> = []
 			for (let k = 0; k < sportDaysLists.length; k++) {
 				const daysList = sportDaysLists[k];
@@ -70,23 +65,13 @@ export default class BetwayCrawler extends BaseCrawler {
 				}
 			}
 			
-
-		await browser.close();
 		const elapsedTime = parseHrtimeToSeconds(process.hrtime(startTime))
 		this.crawlData.elapsedTime = Number(elapsedTime)
-		this.crawlData.gamesFound = matchDataList.map((elem: ParsedGameData):string => {
-			return elem.uuid
-		})
+		this.crawlData.gamesFound = matchDataList
 		console.log(`betway crawler finished in ${elapsedTime}s, and it fetched ${matchDataList.length} games`)
-		//logJson(matchDataList, 'betway')
 		return matchDataList;
-		}catch(err){
-      console.log('BLOCKING ERROR')
-			console.log(err)
-			this.crawlData.errors.push({severity: 'CRITICAL', message: err})
-			if (!isNil(browser)) {
-				await browser.close()
-			} 
+		} catch(err) {
+			this.saveError(this.errorTypes.CRITICAL, err, page)
       return []
     }	
 	}
@@ -121,9 +106,6 @@ export default class BetwayCrawler extends BaseCrawler {
 		return matchDataList
 	}
 
-
-
-
 	getRawRowData(tableRow: Cheerio, raw_SportAndTournamentNameAndDay:string):RawGameData {
 		const parsed_SportAndTournamentNameAndDay = raw_SportAndTournamentNameAndDay.split('_').filter(elem => elem !== 'esports')
 	
@@ -156,7 +138,7 @@ export default class BetwayCrawler extends BaseCrawler {
 	parseRawData(rawRowData:RawGameData):ParsedGameData {
 		try{
 			
-			const uuid = uniqid()
+			const id = uniqid()
 
 			//look for any erros in the raw data and throw them if you find any
 			const rawDataError = this.checkForErrors(rawRowData)
@@ -168,7 +150,7 @@ export default class BetwayCrawler extends BaseCrawler {
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {
 				const parsedMarketData: MarketData = {
 					...elem,
-					bets: this.formatAllMarketOdds(elem.bets, uuid)
+					bets: this.formatAllMarketOdds(elem.bets, id)
 				}
 				return parsedMarketData
 			})
@@ -179,10 +161,10 @@ export default class BetwayCrawler extends BaseCrawler {
 			if(date.isValid(rawRowData.date, 'YYYY-MM-DD-HH:mm')){
 				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD-HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
-			} else throw `Problem parsing the date. Tried to parse: "${rawRowData.date}"`
+			} else throw `Problem parsing the date. Tried to parse: '${rawRowData.date}'`
 
 			return {
-				uuid: uuid,
+				id: id,
 				parentMatchesdId: null,
 				sportbookId: rawRowData.sportbookId,
 				competitionName: rawRowData.competitionName,
@@ -194,8 +176,7 @@ export default class BetwayCrawler extends BaseCrawler {
       }
 
 		}catch(err){
-			console.log('(betway) Non Blocking Error: ' + err)
-			this.crawlData.errors.push({severity: 'NON_BLOCKING', message: err})
+			this.saveError(this.errorTypes.NON_BLOCKING, err)
       return null
 		}
 	}
@@ -230,21 +211,30 @@ export default class BetwayCrawler extends BaseCrawler {
 	 *
 	 * @memberof BetwayCrawler
 	 */
-	getDom = async (page:Page, url:string):Promise<string> => {
+	getDom = async (page:Page, urlPath:string):Promise<string> => {
 		
-		await page.goto(url, { waitUntil: 'networkidle0', timeout: 150000 });
-	
+		await page.goto(this.baseURL + urlPath);
+		try{
+			await page.waitForSelector('.endpoint.node > div')
+
+			if(!page.url().includes(urlPath)) return ''
+			
+			await page.waitForSelector('.eventTableItemCollection[data-widget*="EventTableListWidget"]')
+		} catch (err){
+			console.log('(betway) Error: waiting for selector failed, url:' + urlPath + ' - '+ err) //TODO make sure this gets safely added to the errors
+		}
+		
 		let buttonsNum = 0;
-		do{
+		do {
 			const handles = await page.$$('.collapsableHeader[collapsed=true]');
 			buttonsNum = handles.length
 			if(!isNil(handles[0])){
 				await handles[0].click()
 			}
-			
-		}while(buttonsNum > 1)
+			await this.sleep(500)
+		} while (buttonsNum > 1)
 	
-		await waitForNetworkIdle(page,100,0)
+		await this.sleep(1000)
 		
 		const html = await page.content()
 		return html;
