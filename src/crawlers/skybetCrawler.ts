@@ -158,7 +158,7 @@ class SkyBetCrawler extends BaseCrawler {
 			if(date.isValid(rawDateString, 'D MMMM YYYY HH:mm')){
 				const parsedDate:any = date.parse(rawDateString, 'D MMMM YYYY HH:mm')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
-			} else throw 'Problem parsing the date'
+			} else throw `Problem parsing the date. Tried to parse: '${rawDateString.trim()}'`
 			
 			//format all the bets odds in the markets
 			const parsedMarkets = rawRowData.markets.map((elem: RawMarketData):MarketData => {

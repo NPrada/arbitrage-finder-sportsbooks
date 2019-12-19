@@ -294,12 +294,13 @@ export default class BaseCrawler {
 	 * @memberof BaseCrawler
 	 */
 	async runPuppeteer (domsGetter: (page:Page, browser:any,) => any){
-		let browser = null
+		let browser: any = null
 		let page = null
 		try{
 			browser = await puppeteer.launch({
 				ignoreHTTPSErrors: true, 
-				args: ['--no-sandbox','--disable-setuid-sandbox']
+				args: ['--no-sandbox','--disable-setuid-sandbox'],
+				headless: false
 			});
 			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
@@ -307,12 +308,27 @@ export default class BaseCrawler {
 			await page.setDefaultTimeout(15000)
 
 		 const result = await domsGetter(page, browser )
-		 if (!isNil(browser)) await browser.close()
+		 if (!isNil(browser)) {
+			console.log('closing browser clean')
+			await browser.close()
+			console.log('closed browser')
+		 }
 		 return result
 		} catch(err) {
 
-			if (!isNil(browser)) await browser.close()
+			if (!isNil(browser)) {
+				console.log('closing browser error')
+				await browser.close()
+				console.log('closed browser')
+			 }
 			throw err
+		}
+		finally {
+			if (!isNil(browser)) {
+				console.log('closing browser final')
+				await browser!.close()
+				console.log('closed browser')
+			 }
 		}
 	}
 }
