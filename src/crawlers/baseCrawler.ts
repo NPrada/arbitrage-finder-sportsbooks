@@ -299,8 +299,7 @@ export default class BaseCrawler {
 		try{
 			browser = await puppeteer.launch({
 				ignoreHTTPSErrors: true, 
-				args: ['--no-sandbox','--disable-setuid-sandbox'],
-				headless: false
+				args: ['--no-sandbox','--disable-setuid-sandbox']
 			});
 			page = await browser.newPage();
 			await page.setUserAgent(this.fakeUA())
