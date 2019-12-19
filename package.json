@@ -9,8 +9,8 @@
     "start": "npm run build  && node dist/src/index.js",
     "cron": "npm run build &&  node dist/src/cron.js && echo cron scheduler started..",
     "testdeployment": "node src/index.js",
-		"deploy": "node src/cron.js && echo cron scheduler started..",
-		"deploy:build": "npm run build && cd dist/ && npm run deploy"
+    "deploy": "node src/cron.js && echo cron scheduler started..",
+    "deploy:build": "npm run build && cd dist/ && npm run deploy"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "morgan": "^1.9.1",
     "node-cron": "^2.0.3",
     "nodemailer": "^5.1.1",
-    "puppeteer": "^1.17.0",
+    "puppeteer": "^2.0.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "uniqid": "^5.0.3"

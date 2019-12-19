@@ -20,12 +20,12 @@ const crawlerTask = async () => {
 	console.log('Starting crawl task....')
 	const betwayResults = betwayCrawler.run()
   const skyResults = skyBetCrawler.run()
-	const egbResults = egbCrawler.run()
+	// const egbResults = egbCrawler.run()
 
 	// waits for all functions to finish before continuing, done this way so they all run concurrently
-	const allResults = [await egbResults, await skyResults, await betwayResults]; 
+	const allResults = [await skyResults, await betwayResults]; //await egbResults
 
-	const allGamesCrawled:any = {skybet: allResults[0], egb:allResults[1], betway: allResults[2]}
+	const allGamesCrawled:any = {skybet: allResults[0], betway: allResults[1]} //egb:allResults[1]
 	
 	const arbFinder = new DataHandler(allGamesCrawled)
 	const allGameContainers = arbFinder.matchGames()
@@ -36,7 +36,7 @@ const crawlerTask = async () => {
 		crawlersData: [
 			betwayCrawler.getCrawlMetadata(),
 			skyBetCrawler.getCrawlMetadata(),
-			egbCrawler.getCrawlMetadata()
+			//egbCrawler.getCrawlMetadata()
 		],
 		matchContainers: Object.keys(allGameContainers).map((key) => {
 			return allGameContainers[key];

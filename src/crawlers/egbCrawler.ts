@@ -117,7 +117,7 @@ class EGBCrawler extends BaseCrawler {
 			if(date.isValid(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')){
 				const parsedDate:any = date.parse(rawRowData.date, 'YYYY-MM-DD HH:mm:ss')
 				formattedDate = date.format(parsedDate,'YYYY-MM-DD HH:mm')
-			} else throw 'Problem parsing the date'
+			} else throw `Problem parsing the date. Tried to parse: '${rawRowData.date}'`
 
       
       return {
