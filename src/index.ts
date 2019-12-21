@@ -18,13 +18,13 @@ const betwayCrawler = new BetwayCrawler('betway')
 
 const crawlerTask = async () => {
 	console.log('Starting crawl task....')
-	const betwayResults = betwayCrawler.run()
-  const skyResults = skyBetCrawler.run()
+	const betwayResults = await   betwayCrawler.run()
+  const skyResults = await skyBetCrawler.run()
 	// const egbResults = egbCrawler.run()
 
 	// waits for all functions to finish before continuing, done this way so they all run concurrently
-	const allResults = [await skyResults, await betwayResults]; //await egbResults
-
+	//const allResults = [await skyResults, await betwayResults]; //await egbResults
+	const allResults = [skyResults, betwayCrawler]
 	const allGamesCrawled:any = {skybet: allResults[0], betway: allResults[1]} //egb:allResults[1]
 	
 	const arbFinder = new DataHandler(allGamesCrawled)
