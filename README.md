@@ -1,5 +1,8 @@
 # arbitrage-finder
-project to find profitable arbitrages on betting websites
+project to find profitable arbitrages on sportsbetting websites
+Currently the sportsbooks being scraped are Skybet, Betway and E-gamingbets.com
+
+This project contains 3 webscrapers that get odds data from the three sites, matches it togethere and looks for possible arbitrage opportunities.
 
 ### Deploy With pipeline
 - Cherry pick onto release branch 
@@ -14,6 +17,4 @@ project to find profitable arbitrages on betting websites
 - **bet**: is one or more outcomes of a single market, eg the market might be "Outright Win" and the bet is "Liverpool win"
 - **competition**: tournament / league name that a game is part of
 
-### TODO
-- https://github.com/GoogleChrome/puppeteer/issues/3443#issuecomment-433096772
-- do not match games on the same sportsbook
+
