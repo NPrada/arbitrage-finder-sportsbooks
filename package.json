@@ -24,7 +24,7 @@
     "date-and-time": "^0.6.3",
     "dotenv": "^6.2.0",
     "graphql-request": "^1.8.2",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.19",
     "mongoose": "^5.4.19",
     "morgan": "^1.9.1",
     "node-cron": "^2.0.3",
